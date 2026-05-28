@@ -1,0 +1,330 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0007FE8EE77BF614EEC78454 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046FF250661C1A57128D9653 /* AppState.swift */; };
+		294D18FD061DCE2F7D47D984 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4497C799942BE3E0C71A7CA /* AudioManager.swift */; };
+		440E8C097EE83EBE6D22F300 /* TTSEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21F265B20959E99B67262FF6 /* TTSEngine.swift */; };
+		51C96F476EF986563502D0C7 /* SpeechManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE929B665D71F82EBDB5E3AE /* SpeechManager.swift */; };
+		860672460D4517C84A20949D /* MainChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9FE578776F9D1652E9A5B5A /* MainChatView.swift */; };
+		8C3AB40F3D837C7D75C53CEC /* CharacterSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16B77D29BDCA676A6F236F2 /* CharacterSetupView.swift */; };
+		B1D60D2A939BCD368183EA4C /* VoiceSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93C0F6A81F949DE2DC31E44F /* VoiceSetupView.swift */; };
+		D2831285B107C0DA737A67C7 /* LittleRipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2922BF6D64664ADE9AF982AD /* LittleRipApp.swift */; };
+		D29DEB587AAEC2C7CF7ADE00 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04FB6BA3AD52385EDD31FB5C /* ContentView.swift */; };
+		F20FC1F969F7D118944B7ACD /* LLMEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F88B4CBED610AF6060BE0342 /* LLMEngine.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		046FF250661C1A57128D9653 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		04FB6BA3AD52385EDD31FB5C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		21F265B20959E99B67262FF6 /* TTSEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSEngine.swift; sourceTree = "<group>"; };
+		2922BF6D64664ADE9AF982AD /* LittleRipApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LittleRipApp.swift; sourceTree = "<group>"; };
+		8676649E91364A8825D554A3 /* LittleRip.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LittleRip.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		93C0F6A81F949DE2DC31E44F /* VoiceSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceSetupView.swift; sourceTree = "<group>"; };
+		AE929B665D71F82EBDB5E3AE /* SpeechManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechManager.swift; sourceTree = "<group>"; };
+		B16B77D29BDCA676A6F236F2 /* CharacterSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterSetupView.swift; sourceTree = "<group>"; };
+		C4497C799942BE3E0C71A7CA /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		C9FE578776F9D1652E9A5B5A /* MainChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainChatView.swift; sourceTree = "<group>"; };
+		F88B4CBED610AF6060BE0342 /* LLMEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMEngine.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		19091E80A479AC1CFB217225 = {
+			isa = PBXGroup;
+			children = (
+				3E6D57A46CB1E06E484E8FA7 /* littlerip */,
+				DF2FD4C9EEF35322251E6FF5 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3E6D57A46CB1E06E484E8FA7 /* littlerip */ = {
+			isa = PBXGroup;
+			children = (
+				046FF250661C1A57128D9653 /* AppState.swift */,
+				C4497C799942BE3E0C71A7CA /* AudioManager.swift */,
+				B16B77D29BDCA676A6F236F2 /* CharacterSetupView.swift */,
+				04FB6BA3AD52385EDD31FB5C /* ContentView.swift */,
+				2922BF6D64664ADE9AF982AD /* LittleRipApp.swift */,
+				F88B4CBED610AF6060BE0342 /* LLMEngine.swift */,
+				C9FE578776F9D1652E9A5B5A /* MainChatView.swift */,
+				AE929B665D71F82EBDB5E3AE /* SpeechManager.swift */,
+				21F265B20959E99B67262FF6 /* TTSEngine.swift */,
+				93C0F6A81F949DE2DC31E44F /* VoiceSetupView.swift */,
+			);
+			name = littlerip;
+			path = .;
+			sourceTree = "<group>";
+		};
+		DF2FD4C9EEF35322251E6FF5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8676649E91364A8825D554A3 /* LittleRip.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1038F226D61A1778974AA9A8 /* LittleRip */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CC621FB232ED6A68F104CF33 /* Build configuration list for PBXNativeTarget "LittleRip" */;
+			buildPhases = (
+				502643DCFE43739A41EAB8B6 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LittleRip;
+			packageProductDependencies = (
+			);
+			productName = LittleRip;
+			productReference = 8676649E91364A8825D554A3 /* LittleRip.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		40C683381E91541F094210C6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					1038F226D61A1778974AA9A8 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 6B13CB1917B50C9154B6E3CF /* Build configuration list for PBXProject "LittleRip" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 19091E80A479AC1CFB217225;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = DF2FD4C9EEF35322251E6FF5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1038F226D61A1778974AA9A8 /* LittleRip */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		502643DCFE43739A41EAB8B6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0007FE8EE77BF614EEC78454 /* AppState.swift in Sources */,
+				294D18FD061DCE2F7D47D984 /* AudioManager.swift in Sources */,
+				8C3AB40F3D837C7D75C53CEC /* CharacterSetupView.swift in Sources */,
+				D29DEB587AAEC2C7CF7ADE00 /* ContentView.swift in Sources */,
+				F20FC1F969F7D118944B7ACD /* LLMEngine.swift in Sources */,
+				D2831285B107C0DA737A67C7 /* LittleRipApp.swift in Sources */,
+				860672460D4517C84A20949D /* MainChatView.swift in Sources */,
+				51C96F476EF986563502D0C7 /* SpeechManager.swift in Sources */,
+				440E8C097EE83EBE6D22F300 /* TTSEngine.swift in Sources */,
+				B1D60D2A939BCD368183EA4C /* VoiceSetupView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0C2D910DB5CE79BC46E99A6E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.maxautomize.LittleRip;
+				PRODUCT_NAME = LittleRip;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		18F6F1E4FE55DFC68BE8AEB1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		9F050B91086494A9C2B5A186 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.maxautomize.LittleRip;
+				PRODUCT_NAME = LittleRip;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C300675B7CD8AFE1CF798252 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6B13CB1917B50C9154B6E3CF /* Build configuration list for PBXProject "LittleRip" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				18F6F1E4FE55DFC68BE8AEB1 /* Debug */,
+				C300675B7CD8AFE1CF798252 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CC621FB232ED6A68F104CF33 /* Build configuration list for PBXNativeTarget "LittleRip" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9F050B91086494A9C2B5A186 /* Debug */,
+				0C2D910DB5CE79BC46E99A6E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 40C683381E91541F094210C6 /* Project object */;
+}
