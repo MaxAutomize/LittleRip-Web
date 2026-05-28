@@ -21,6 +21,20 @@ targets:
           - "Package.swift"
     info:
       path: Info.plist
+      properties:
+        CFBundleDisplayName: "Little Rip"
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSMicrophoneUsageDescription: "Little Rip needs microphone access to hear you speak. Audio stays on your device."
+        NSSpeechRecognitionUsageDescription: "Little Rip uses speech recognition to understand what you say. All processing happens on-device."
+        NSBluetoothAlwaysUsageDescription: "Little Rip uses Bluetooth to connect to external microphones and speakers for a hands-free experience."
+        NSBluetoothPeripheralUsageDescription: "Little Rip uses Bluetooth to connect to external microphones and speakers."
+        UIBackgroundModes:
+          - audio
+          - bluetooth-central
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.maxautomize.LittleRip
