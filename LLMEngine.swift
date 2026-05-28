@@ -53,7 +53,14 @@ class LLMEngine {
         completion: @escaping (String) -> Void
     ) {
         guard isModelLoaded else {
-            completion("Model not loaded. Add a GGUF model file to get started.")
+            let lastUserMessage = messages.last(where: { $0.role == .user })?.content ?? ""
+            let fallbackResponse: String
+            if systemPrompt.isEmpty {
+                fallbackResponse = "I heard you say: \"\(lastUserMessage)\". The local model is not loaded yet, but the voice loop is working."
+            } else {
+                fallbackResponse = "I heard you say: \"\(lastUserMessage)\". My full local brain is not loaded yet, but I am here and the voice loop is working."
+            }
+            completion(fallbackResponse)
             return
         }
         
