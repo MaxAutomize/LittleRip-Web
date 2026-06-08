@@ -30,3 +30,6 @@ xcshareddata/
 # Models (too large for git)
 *.gguf
 *.safetensors
+.env*.local
+.vercel
+.next/
