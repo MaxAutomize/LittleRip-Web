@@ -1,57 +1,19 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
-import { displayName, clean } from '../models'
+import { useState, useRef, useEffect } from 'react'
+import { clean } from '../models'
 
 export default function ChatPage() {
-  const [models, setModels] = useState([])
-  const [selectedModel, setSelectedModel] = useState('')
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
-  const [ollamaStatus, setOllamaStatus] = useState('checking')
-  const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
-  const dropdownRef = useRef(null)
-
-  const fetchModels = useCallback(async () => {
-    try {
-      const res = await fetch('/api/models')
-      const data = await res.json()
-      if (data.models?.length) {
-        setModels(data.models)
-        setOllamaStatus('online')
-        if (!selectedModel) setSelectedModel(data.models[0].id)
-      } else {
-        setOllamaStatus('offline')
-      }
-    } catch {
-      setOllamaStatus('offline')
-    }
-  }, [selectedModel])
-
-  useEffect(() => { fetchModels() }, [])
-  useEffect(() => {
-    const interval = setInterval(fetchModels, 15000)
-    return () => clearInterval(interval)
-  }, [fetchModels])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   async function send() {
     const text = input.trim()
@@ -67,7 +29,7 @@ export default function ChatPage() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: updated, model: selectedModel }),
+        body: JSON.stringify({ messages: updated }),
       })
 
       if (!res.ok) {
@@ -133,33 +95,6 @@ export default function ChatPage() {
           <h1>Chat</h1>
         </div>
         <div className="header-right">
-          <div className={`status-dot ${ollamaStatus}`} />
-
-          {/* Custom dropdown */}
-          <div className="dropdown" ref={dropdownRef}>
-            <button
-              className="dropdown-trigger"
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              disabled={ollamaStatus !== 'online'}
-            >
-              {selectedModel ? displayName(selectedModel) : 'Select model'}
-              <span className="dropdown-arrow">▾</span>
-            </button>
-            {dropdownOpen && (
-              <ul className="dropdown-list">
-                {models.map((m) => (
-                  <li
-                    key={m.id}
-                    className={`dropdown-item ${m.id === selectedModel ? 'active' : ''}`}
-                    onClick={() => { setSelectedModel(m.id); setDropdownOpen(false); }}
-                  >
-                    {displayName(m.id)}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
           {messages.length > 0 && (
             <button className="clear-btn" onClick={() => setMessages([])}>Clear</button>
           )}
@@ -172,7 +107,7 @@ export default function ChatPage() {
         )}
         {messages.map((m, i) => (
           <div key={i} className={`chat-msg ${m.role}`}>
-            <div className="msg-role">{m.role === 'user' ? 'You' : displayName(selectedModel)}</div>
+            <div className="msg-role">{m.role === 'user' ? 'You' : 'LittleRip'}</div>
             <div className="msg-content">
               {m.role === 'assistant' ? clean(m.content) : m.content}
               {streaming && i === messages.length - 1 && m.role === 'assistant' && (
@@ -190,14 +125,14 @@ export default function ChatPage() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKey}
-          placeholder={ollamaStatus === 'online' ? `Message ${displayName(selectedModel)}…` : 'Waiting for Ollama…'}
-          disabled={streaming || ollamaStatus !== 'online'}
+          placeholder="Message LittleRip…"
+          disabled={streaming}
           rows={1}
         />
         <button
           className="send-btn"
           onClick={send}
-          disabled={!input.trim() || streaming || ollamaStatus !== 'online'}
+          disabled={!input.trim() || streaming}
         >
           {streaming ? '…' : '→'}
         </button>

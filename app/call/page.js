@@ -1,66 +1,20 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { displayName, clean, voiceType } from '../models'
+import { clean } from '../models'
 
 export default function CallPage() {
-  const [models, setModels] = useState([])
-  const [selectedModel, setSelectedModel] = useState('')
-  const [ollamaStatus, setOllamaStatus] = useState('checking')
   const [callState, setCallState] = useState('idle') // idle | connecting | listening | thinking | speaking
   const [transcript, setTranscript] = useState([]) // [{ role, text }]
   const [liveText, setLiveText] = useState('')
-  const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const recognitionRef = useRef(null)
   const isSpeakingRef = useRef(false)
   const callActiveRef = useRef(false)
   const streamingRef = useRef(false)
   const transcriptRef = useRef([])
-  const dropdownRef = useRef(null)
-  const selectedModelRef = useRef('')
-  const sendToModelRef = useRef(null)
   const speechQueueRef = useRef([])
   const speechDoneCallbacksRef = useRef([])
-
-  /* ── models ── */
-
-  const fetchModels = useCallback(async () => {
-    try {
-      const res = await fetch('/api/models')
-      const data = await res.json()
-      if (data.models?.length) {
-        setModels(data.models)
-        setOllamaStatus('online')
-        setSelectedModel(prev => prev || data.models[0].id)
-      } else {
-        setOllamaStatus('offline')
-      }
-    } catch {
-      setOllamaStatus('offline')
-    }
-  }, [])
-
-  useEffect(() => { fetchModels() }, [])
-  useEffect(() => {
-    const id = setInterval(fetchModels, 15000)
-    return () => clearInterval(id)
-  }, [fetchModels])
-
-  useEffect(() => {
-    selectedModelRef.current = selectedModel
-  }, [selectedModel])
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   /* ── TTS ── */
 
@@ -81,26 +35,13 @@ export default function CallPage() {
     utt.rate = 1.1
 
     const voices = speechSynthesis.getVoices()
-    const currentModel = selectedModelRef.current || selectedModel
-    const type = voiceType(currentModel)
-
-    const girlVoice = voices.find(v => v.name === 'Google US English')
+    const voice = voices.find(v => v.name === 'Google US English')
       || voices.find(v => v.name === 'Samantha')
       || voices.find(v => v.lang === 'en-US' && v.name.includes('Google'))
       || voices.find(v => v.lang === 'en-US')
-
-    const boyVoice = voices.find(v => v.name === 'Google UK English Male')
-      || voices.find(v => v.name === 'Daniel')
-      || voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('male'))
-
-    const fallbackVoice = girlVoice
-      || voices.find(v => v.lang.startsWith('en') && v.name.includes('Google'))
       || voices.find(v => v.lang.startsWith('en'))
       || voices[0]
-
-    const voice = type === 'female' ? (girlVoice || fallbackVoice) : (boyVoice || fallbackVoice)
     if (voice) utt.voice = voice
-    utt.pitch = type === 'male' && !boyVoice ? 0.85 : 1.0
 
     const finish = () => {
       isSpeakingRef.current = false
@@ -189,7 +130,6 @@ export default function CallPage() {
     speechDoneCallbacksRef.current = []
     isSpeakingRef.current = false
 
-    // Build messages array for the API
     const apiMessages = transcriptRef.current.map(t => ({
       role: t.role,
       content: t.text,
@@ -199,7 +139,7 @@ export default function CallPage() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: apiMessages, model: selectedModelRef.current || selectedModel }),
+        body: JSON.stringify({ messages: apiMessages }),
       })
 
       if (!res.ok) {
@@ -237,7 +177,6 @@ export default function CallPage() {
               sentenceBuffer += delta
               setLiveText(fullResponse)
 
-              // Speak complete sentences as they arrive
               if (sentenceBuffer.match(/[.!?。]/) && callActiveRef.current) {
                 const match = sentenceBuffer.match(/[.!?。]/)
                 const endIdx = sentenceBuffer.indexOf(match[0]) + 1
@@ -250,12 +189,10 @@ export default function CallPage() {
         }
       }
 
-      // Finalize
       transcriptRef.current = [...transcriptRef.current, { role: 'assistant', text: fullResponse }]
       setTranscript([...transcriptRef.current])
       setLiveText('')
 
-      // Speak any remaining text, then go back to listening only after speech is finished
       if (callActiveRef.current) {
         if (sentenceBuffer.trim()) {
           speak([sentenceBuffer.trim()], () => startListening())
@@ -272,7 +209,7 @@ export default function CallPage() {
     }
 
     streamingRef.current = false
-  }, [selectedModel, speak, startListening])
+  }, [speak, startListening])
 
   useEffect(() => {
     sendToModelRef.current = sendToModel
@@ -286,9 +223,6 @@ export default function CallPage() {
     setTranscript([])
     transcriptRef.current = []
 
-    // Unlock speech synthesis on mobile by speaking a silent utterance
-    // inside the user-gesture click handler. Without this, iOS/Android
-    // block all TTS that happens later in callbacks.
     const warmup = new SpeechSynthesisUtterance('')
     warmup.volume = 0
     speechSynthesis.speak(warmup)
@@ -340,58 +274,26 @@ export default function CallPage() {
     <div className="call-shell">
       <header className="call-top">
         <a href="/" className="back-link">← LittleRip</a>
-        <div className="call-top-center">
-          <div className="dropdown" ref={dropdownRef}>
-            <button
-              className="dropdown-trigger"
-              onClick={() => callState === 'idle' && setDropdownOpen(!dropdownOpen)}
-              disabled={ollamaStatus !== 'online' || callState !== 'idle'}
-            >
-              {selectedModel ? displayName(selectedModel) : 'Select model'}
-              <span className="dropdown-arrow">▾</span>
-            </button>
-            {dropdownOpen && (
-              <ul className="dropdown-list">
-                {models.map(m => (
-                  <li
-                    key={m.id}
-                    className={`dropdown-item ${m.id === selectedModel ? 'active' : ''}`}
-                    onClick={() => { selectedModelRef.current = m.id; setSelectedModel(m.id); setDropdownOpen(false); }}
-                  >
-                    {displayName(m.id)}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-        <div className={`status-dot ${ollamaStatus}`} />
       </header>
 
       <div className="call-stage">
-        {/* Big state indicator */}
         <div className={`call-orb ${callState}`}>
           <span className="orb-icon">{current.icon}</span>
         </div>
         <p className="call-state-label" style={{ color: current.color }}>{current.label}</p>
-        {callState !== 'idle' && selectedModel && (
-          <p className="call-model-name">{displayName(selectedModel)}</p>
-        )}
 
-        {/* Live streaming text */}
         {liveText && callState === 'thinking' && (
           <div className="live-text">
-            <span className="msg-role">{displayName(selectedModel)}</span>
+            <span className="msg-role">LittleRip</span>
             <p>{clean(liveText)}<span className="cursor">▌</span></p>
           </div>
         )}
 
-        {/* Transcript */}
         {transcript.length > 0 && (
           <div className="call-transcript">
             {transcript.map((t, i) => (
               <div key={i} className={`call-msg ${t.role}`}>
-                <span className="msg-role">{t.role === 'user' ? 'You' : displayName(selectedModel)}</span>
+                <span className="msg-role">{t.role === 'user' ? 'You' : 'LittleRip'}</span>
                 <p>{t.role === 'assistant' ? clean(t.text) : t.text}</p>
               </div>
             ))}
@@ -401,11 +303,7 @@ export default function CallPage() {
 
       <div className="call-controls">
         {callState === 'idle' ? (
-          <button
-            className="call-start-btn"
-            onClick={startCall}
-            disabled={ollamaStatus !== 'online'}
-          >
+          <button className="call-start-btn" onClick={startCall}>
             <span className="btn-icon">📞</span>
             Start Call
           </button>
