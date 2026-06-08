@@ -49,9 +49,12 @@ export async function POST(req) {
   const ollamaUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
   const model = getModelId()
 
+  const systemMessage = { role: 'system', content: 'You are LittleRip.' }
+  const outgoing = [systemMessage, ...messages]
+
   const response = await callOllama(`${ollamaUrl}/v1/chat/completions`, {
     model,
-    messages,
+    messages: outgoing,
     stream: true,
   })
 
