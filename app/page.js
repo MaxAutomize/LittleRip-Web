@@ -1,0 +1,23 @@
+'use client'
+
+import Link from 'next/link'
+
+export default function Home() {
+  return (
+    <main className="menu-shell">
+      <h1 className="menu-title">LittleRip</h1>
+
+      <nav className="menu-options">
+        <Link href="/chat" className="menu-card">
+          <span className="menu-icon">💬</span>
+          <span className="menu-label">Chat</span>
+        </Link>
+
+        <Link href="/call" className="menu-card call-card">
+          <span className="menu-icon">📞</span>
+          <span className="menu-label">Call</span>
+        </Link>
+      </nav>
+    </main>
+  )
+}

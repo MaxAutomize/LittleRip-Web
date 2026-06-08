@@ -1,25 +1,11 @@
-# Node/npm (from previous project, not part of iOS app)
+# Dependencies
 node_modules/
-app/
-next.config.js
-package.json
-package-lock.json
-public/
+
+# Vercel
 .vercel/
 
-# Xcode build artifacts
-DerivedData/
-build/
-*.xcuserdata
-*.xcworkspace/
-xcuserdata/
-*.pbxuser
-*.mode1v3
-*.mode2v3
-*.perspectivev3
-*.xcuserstate
-project.xcworkspace/
-xcshareddata/
+# Build output
+.next/
 
 # macOS
 .DS_Store
@@ -30,6 +16,6 @@ xcshareddata/
 # Models (too large for git)
 *.gguf
 *.safetensors
+
+# Environment
 .env*.local
-.vercel
-.next/
