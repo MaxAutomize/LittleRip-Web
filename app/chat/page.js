@@ -126,7 +126,6 @@ export default function ChatPage() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKey}
           placeholder="Message LittleRip…"
-          disabled={streaming}
           rows={1}
         />
         <button
