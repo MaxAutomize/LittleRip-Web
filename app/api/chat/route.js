@@ -45,15 +45,22 @@ async function callOllama(url, body) {
 }
 
 export async function POST(req) {
-  const { messages } = await req.json()
+  const { messages, model } = await req.json()
   const ollamaUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
-  const model = getModelId()
+  const selectedModel = model || getModelId()
 
-  const systemMessage = { role: 'system', content: 'You are LittleRip.' }
-  const outgoing = [systemMessage, ...messages]
+  // If the client already included a system message (assistant mode), use it as-is.
+  // Otherwise, prepend a default one (chat/call mode).
+  let outgoing
+  if (messages[0]?.role === 'system') {
+    outgoing = messages
+  } else {
+    const systemMessage = { role: 'system', content: 'You are LittleRip.' }
+    outgoing = [systemMessage, ...messages]
+  }
 
   const response = await callOllama(`${ollamaUrl}/v1/chat/completions`, {
-    model,
+    model: selectedModel,
     messages: outgoing,
     stream: true,
   })

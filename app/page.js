@@ -17,6 +17,11 @@ export default function Home() {
           <span className="menu-icon">📞</span>
           <span className="menu-label">Call</span>
         </Link>
+
+        <Link href="/assistant" className="menu-card assistant-card">
+          <span className="menu-icon">🛠</span>
+          <span className="menu-label">Assistant</span>
+        </Link>
       </nav>
     </main>
   )
