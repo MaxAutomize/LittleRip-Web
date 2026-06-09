@@ -213,11 +213,11 @@ body {
 }
 
 .menu-title-wrap {
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  height: clamp(200px, 34vw, 420px);
-  margin-top: 28px;
-  margin-bottom: 20px;
+  width: 110vw;
+  margin-left: calc(-55vw + 50%);
+  height: clamp(320px, 48vw, 580px);
+  margin-top: -40px;
+  margin-bottom: -60px;
   pointer-events: none;
   overflow: visible;
 }
@@ -229,12 +229,12 @@ body {
 }
 
 .svg-title-text {
-  font-family: 'Imperial Script', 'Great Vibes', 'Snell Roundhand', cursive;
-  font-size: 160px;
+  font-family: 'Pinyon Script', 'Imperial Script', 'Great Vibes', cursive;
+  font-size: clamp(150px, 19vw, 280px);
   font-weight: 400;
   letter-spacing: 0.03em;
   fill: #d4ad55;
-  filter: drop-shadow(0 2px 0 rgba(255, 236, 178, 0.12)) drop-shadow(0 14px 36px rgba(167, 118, 38, 0.22));
+  filter: drop-shadow(0 1px 0 rgba(255, 236, 178, 0.1)) drop-shadow(0 12px 30px rgba(167, 118, 38, 0.18));
 }
 
 .menu-sub {
@@ -280,8 +280,8 @@ body {
     bottom: 42px;
   }
   .svg-title-text {
-    font-size: 100px;
-    letter-spacing: 0.02em;
+    font-size: 86px;
+    letter-spacing: 0.01em;
   }
   .menu-card {
     font-size: 0.88rem;
