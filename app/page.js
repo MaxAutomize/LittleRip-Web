@@ -15,20 +15,9 @@ export default function Home() {
       </h1>
 
       <nav className="menu-options">
-        <Link href="/chat" className="menu-card">
-          <span className="menu-icon">💬</span>
-          <span className="menu-label">Chat</span>
-        </Link>
-
-        <Link href="/call" className="menu-card call-card">
-          <span className="menu-icon">📞</span>
-          <span className="menu-label">Call</span>
-        </Link>
-
-        <Link href="/assistant" className="menu-card assistant-card">
-          <span className="menu-icon">🛠</span>
-          <span className="menu-label">Assistant</span>
-        </Link>
+        <Link href="/chat" className="menu-card">Chat</Link>
+        <Link href="/call" className="menu-card">Call</Link>
+        <Link href="/assistant" className="menu-card">Assistant</Link>
       </nav>
     </main>
   )

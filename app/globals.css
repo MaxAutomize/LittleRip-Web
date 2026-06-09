@@ -202,12 +202,13 @@ body {
 /* ── Menu (Home Page) ── */
 
 .menu-shell {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 40px 20px;
+  padding: 40px 20px 120px;
   text-align: center;
 }
 
@@ -245,51 +246,45 @@ body {
 }
 
 .menu-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
-  width: min(840px, 100%);
+  position: absolute;
+  bottom: 54px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(42px, 9vw, 120px);
+  width: min(720px, calc(100% - 40px));
 }
 
 .menu-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  padding: 48px 32px;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background: var(--panel);
-  backdrop-filter: blur(30px);
   text-decoration: none;
-  color: var(--text);
-  transition: transform 0.25s, border-color 0.3s, box-shadow 0.3s;
+  color: #fffaf0;
+  font-family: var(--serif);
+  font-size: clamp(1.1rem, 2.2vw, 1.55rem);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: color 0.25s, transform 0.25s, text-shadow 0.25s;
 }
 
 .menu-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--accent);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(201,168,76,0.06);
-}
-
-.menu-icon {
-  font-size: 2.8rem;
-}
-
-.menu-label {
-  font-family: var(--serif);
-  font-size: 1.4rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  color: var(--accent);
+  transform: translateY(-2px);
+  text-shadow: 0 0 24px rgba(201, 168, 76, 0.35);
 }
 
 @media (max-width: 500px) {
   .menu-options {
-    grid-template-columns: 1fr;
+    gap: 24px;
+    bottom: 42px;
   }
   .menu-title {
     font-size: 2.8rem;
+    letter-spacing: 0.1em;
+  }
+  .menu-card {
+    font-size: 0.88rem;
     letter-spacing: 0.1em;
   }
 }
