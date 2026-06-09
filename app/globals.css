@@ -206,34 +206,21 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100vh;
-  padding: 28px 20px 120px;
+  padding: 0 20px 120px;
   text-align: center;
 }
 
-.menu-title-wrap {
-  width: 120vw;
-  margin-left: calc(-60vw + 50%);
-  height: clamp(340px, 52vw, 640px);
-  margin-top: -80px;
-  margin-bottom: -100px;
-  pointer-events: none;
-  overflow: visible;
-}
-
-.menu-title-svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.svg-title-text {
+.menu-title {
   font-family: 'Pinyon Script', cursive;
-  font-size: clamp(200px, 27vw, 420px);
+  font-size: clamp(5rem, 16vw, 14rem);
   font-weight: 400;
-  letter-spacing: 0.08em;
-  fill: #d4ad55;
+  letter-spacing: 0.12em;
+  color: #d4ad55;
+  text-align: center;
+  margin-top: 6vh;
+  margin-bottom: auto;
   filter: drop-shadow(0 1px 0 rgba(255, 236, 178, 0.1)) drop-shadow(0 12px 30px rgba(167, 118, 38, 0.18));
 }
 
@@ -279,9 +266,10 @@ body {
     gap: 24px;
     bottom: 42px;
   }
-  .svg-title-text {
-    font-size: 86px;
-    letter-spacing: 0.01em;
+  .menu-title {
+    font-size: 3.5rem;
+    letter-spacing: 0.08em;
+    margin-top: 4vh;
   }
   .menu-card {
     font-size: 0.88rem;
