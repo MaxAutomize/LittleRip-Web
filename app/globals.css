@@ -213,7 +213,7 @@ body {
 }
 
 .menu-title {
-  font-family: 'Pinyon Script', cursive;
+  font-family: var(--serif);
   font-size: clamp(5rem, 16vw, 14rem);
   font-weight: 400;
   letter-spacing: 0.12em;
