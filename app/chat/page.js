@@ -92,7 +92,6 @@ export default function ChatPage() {
       <header className="chat-header">
         <div className="header-left">
           <a href="/" className="back-link">← LittleRip</a>
-          <h1>Chat</h1>
         </div>
         <div className="header-right">
           {messages.length > 0 && (

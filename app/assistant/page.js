@@ -225,7 +225,6 @@ export default function AssistantPage() {
       <header className="assistant-header">
         <div className="header-left">
           <a href="/" className="back-link">← LittleRip</a>
-          <h1>Assistant</h1>
         </div>
         <div className="header-right">
           <button
