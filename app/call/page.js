@@ -281,7 +281,9 @@ export default function CallPage() {
         <div className={`call-orb ${callState}`}>
           <span className="orb-icon">{current.icon}</span>
         </div>
-        <p className="call-state-label" style={{ color: current.color }}>{current.label}</p>
+        {callState !== 'idle' && (
+          <p className="call-state-label" style={{ color: current.color }}>{current.label}</p>
+        )}
 
         {liveText && callState === 'thinking' && (
           <div className="live-text">
