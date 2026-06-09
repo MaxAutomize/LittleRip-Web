@@ -208,18 +208,18 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 40px 20px 120px;
+  padding: 28px 20px 120px;
   text-align: center;
 }
 
 .menu-title-wrap {
-  position: absolute;
-  top: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(1380px, 112vw);
-  height: clamp(180px, 26vw, 310px);
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  height: clamp(200px, 34vw, 420px);
+  margin-top: 28px;
+  margin-bottom: 20px;
   pointer-events: none;
+  overflow: visible;
 }
 
 .menu-title-svg {
@@ -228,13 +228,13 @@ body {
   overflow: visible;
 }
 
-.menu-title-svg-text {
+.svg-title-text {
   font-family: 'Imperial Script', 'Great Vibes', 'Snell Roundhand', cursive;
-  font-size: clamp(112px, 15vw, 210px);
+  font-size: 160px;
   font-weight: 400;
-  letter-spacing: 0.045em;
+  letter-spacing: 0.03em;
   fill: #d4ad55;
-  filter: drop-shadow(0 2px 0 rgba(255, 236, 178, 0.16)) drop-shadow(0 16px 40px rgba(167, 118, 38, 0.25));
+  filter: drop-shadow(0 2px 0 rgba(255, 236, 178, 0.12)) drop-shadow(0 14px 36px rgba(167, 118, 38, 0.22));
 }
 
 .menu-sub {
@@ -279,14 +279,9 @@ body {
     gap: 24px;
     bottom: 42px;
   }
-  .menu-title-wrap {
-    top: 4px;
-    width: 122vw;
-    height: 190px;
-  }
-  .menu-title-svg-text {
-    font-size: 120px;
-    letter-spacing: 0.025em;
+  .svg-title-text {
+    font-size: 100px;
+    letter-spacing: 0.02em;
   }
   .menu-card {
     font-size: 0.88rem;
