@@ -5,7 +5,14 @@ import Link from 'next/link'
 export default function Home() {
   return (
     <main className="menu-shell">
-      <h1 className="menu-title">LittleRip</h1>
+      <h1 className="menu-title" aria-label="LittleRip">
+        {'LittleRip'.split('').map((letter, i) => {
+          const center = 4
+          const y = -36 + Math.abs(i - center) * 9
+          const rotate = (i - center) * 3
+          return <span key={i} style={{ '--y': `${y}px`, '--r': `${rotate}deg` }}>{letter}</span>
+        })}
+      </h1>
 
       <nav className="menu-options">
         <Link href="/chat" className="menu-card">
