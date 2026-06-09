@@ -8,8 +8,8 @@ export default function Home() {
       <h1 className="menu-title" aria-label="LittleRip">
         {'LittleRip'.split('').map((letter, i) => {
           const center = 4
-          const y = -36 + Math.abs(i - center) * 9
-          const rotate = (i - center) * 3
+          const y = -58 + Math.abs(i - center) * 13
+          const rotate = (i - center) * 4.5
           return <span key={i} style={{ '--y': `${y}px`, '--r': `${rotate}deg` }}>{letter}</span>
         })}
       </h1>

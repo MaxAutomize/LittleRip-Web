@@ -202,22 +202,27 @@ body {
 
 .menu-title {
   font-family: var(--serif);
-  font-size: clamp(3.2rem, 9vw, 7rem);
+  font-size: clamp(4.2rem, 12vw, 9.6rem);
   font-weight: 400;
-  letter-spacing: 0.16em;
+  font-style: italic;
+  letter-spacing: 0.11em;
   line-height: 1;
-  margin-bottom: 28px;
-  color: var(--muted);
-  text-shadow: 0 2px 30px rgba(201,168,76,0.08);
+  margin-bottom: 40px;
+  color: #d6b76a;
+  text-shadow:
+    0 1px 0 rgba(255, 235, 170, 0.22),
+    0 10px 36px rgba(201, 168, 76, 0.18),
+    0 0 70px rgba(135, 96, 32, 0.22);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  transform: scaleY(1.18);
+  transform: scaleX(1.08) scaleY(1.24);
 }
 
 .menu-title span {
   display: inline-block;
   transform: translateY(var(--y)) rotate(var(--r));
+  transform-origin: bottom center;
 }
 
 .menu-sub {
