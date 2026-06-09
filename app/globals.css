@@ -31,7 +31,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Blurred background slideshow ── */
+/* ── Background slideshow: clear center, blurred edges ── */
 
 .bg-slideshow {
   position: fixed;
@@ -40,13 +40,24 @@ body {
   overflow: hidden;
 }
 
+.bg-slideshow::after {
+  content: '';
+  position: absolute;
+  inset: -28px;
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  mask-image: radial-gradient(circle at center, transparent 0 42%, rgba(0,0,0,0.25) 58%, #000 78%);
+  -webkit-mask-image: radial-gradient(circle at center, transparent 0 42%, rgba(0,0,0,0.25) 58%, #000 78%);
+}
+
 .bg-slideshow img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: blur(2px) saturate(0.75) brightness(0.18);
+  filter: saturate(0.78) brightness(0.2);
   opacity: 0;
   animation: bgFade 24s ease-in-out infinite;
 }
