@@ -881,11 +881,4 @@ body {
   cursor: not-allowed;
 }
 
-.assistant-card {
-  border-color: rgba(100, 180, 255, 0.18);
-}
 
-.assistant-card:hover {
-  border-color: rgba(100, 180, 255, 0.5);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(100, 180, 255, 0.08);
-}
