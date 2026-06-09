@@ -213,22 +213,22 @@ body {
 }
 
 .menu-title {
-  font-family: var(--serif);
-  font-size: clamp(4.2rem, 12vw, 9.6rem);
+  font-family: var(--body);
+  font-size: clamp(4.4rem, 12vw, 9.8rem);
   font-weight: 400;
   font-style: italic;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.13em;
   line-height: 1;
-  margin-bottom: 40px;
-  color: #d6b76a;
+  margin-bottom: 46px;
+  color: #d8b968;
   text-shadow:
-    0 1px 0 rgba(255, 235, 170, 0.22),
-    0 10px 36px rgba(201, 168, 76, 0.18),
-    0 0 70px rgba(135, 96, 32, 0.22);
+    0 1px 0 rgba(255, 235, 170, 0.14),
+    0 10px 34px rgba(201, 168, 76, 0.14),
+    0 0 64px rgba(135, 96, 32, 0.2);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  transform: scaleX(1.08) scaleY(1.24);
+  transform: scaleX(1.16) scaleY(1.08);
 }
 
 .menu-title span {
