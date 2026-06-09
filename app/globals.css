@@ -216,12 +216,14 @@ body {
   font-family: var(--serif);
   font-size: clamp(5rem, 16vw, 14rem);
   font-weight: 400;
-  letter-spacing: 0.12em;
+  font-style: italic;
+  letter-spacing: 0.14em;
   color: #fffaf0;
   text-align: center;
   margin-top: 6vh;
   margin-bottom: auto;
-  filter: drop-shadow(0 1px 0 rgba(255, 236, 178, 0.1)) drop-shadow(0 12px 30px rgba(167, 118, 38, 0.18));
+  transform: scaleX(1.18);
+  filter: drop-shadow(0 12px 30px rgba(167, 118, 38, 0.14));
 }
 
 .menu-sub {
