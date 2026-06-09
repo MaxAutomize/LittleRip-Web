@@ -13,6 +13,7 @@ export default function CallPage() {
   const callActiveRef = useRef(false)
   const streamingRef = useRef(false)
   const transcriptRef = useRef([])
+  const sendToModelRef = useRef(null)
   const speechQueueRef = useRef([])
   const speechDoneCallbacksRef = useRef([])
 
