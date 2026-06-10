@@ -5,6 +5,8 @@ import { clean } from '../models'
 
 const ASSISTANT_PROMPT = `You are LittleRip, an assistant. The user's speech is being transcribed live — you are passively aware of their environment and anything said aloud. Only respond when the user sends you a typed message. When they do, use the context of what you've overheard to inform your response. Keep responses concise and helpful.`
 
+const CHUNK_DURATION = 4000 // ms per audio chunk sent to Groq
+
 export default function AssistantPage() {
   const [messages, setMessages] = useState([])
   const [transcript, setTranscript] = useState([])
@@ -15,9 +17,11 @@ export default function AssistantPage() {
 
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
-  const recognitionRef = useRef(null)
+  const mediaRecorderRef = useRef(null)
+  const streamRef = useRef(null)
+  const chunkTimerRef = useRef(null)
   const transcriptRef = useRef([])
-  const callActiveRef = useRef(false)
+  const chunksRef = useRef([])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -38,90 +42,134 @@ export default function AssistantPage() {
     speechSynthesis.speak(utt)
   }, [])
 
-  /* ── Continuous Listening ── */
+  /* ── Send audio chunk to Groq Whisper via /api/transcribe ── */
 
-  const startListening = useCallback(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SpeechRecognition) return
+  const transcribeChunk = useCallback(async (audioBlob) => {
+    if (!audioBlob || audioBlob.size < 1000) return // skip tiny/empty chunks
 
-    if (recognitionRef.current) {
-      recognitionRef.current.onend = null
-      recognitionRef.current.abort()
-    }
+    try {
+      const formData = new FormData()
+      const ext = audioBlob.type.includes('webm') ? 'webm' : audioBlob.type.includes('mp4') ? 'mp4' : 'ogg'
+      formData.append('file', audioBlob, `recording.${ext}`)
 
-    const recognition = new SpeechRecognition()
-    recognition.continuous = true
-    recognition.interimResults = true
-    recognition.lang = 'en-US'
+      const res = await fetch('/api/transcribe', {
+        method: 'POST',
+        body: formData,
+      })
 
-    recognition.onresult = (event) => {
-      let interim = ''
-      let final = ''
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const text = event.results[i][0].transcript
-        if (event.results[i].isFinal) {
-          final += text
-        } else {
-          interim += text
-        }
-      }
-      if (final.trim()) {
-        transcriptRef.current = [...transcriptRef.current, { text: final.trim(), time: Date.now() }]
+      if (!res.ok) return
+
+      const data = await res.json()
+      const text = data.text?.trim()
+      if (text && text !== '[BLANK_AUDIO]') {
+        transcriptRef.current = [...transcriptRef.current, { text, time: Date.now() }]
         setTranscript([...transcriptRef.current])
       }
-      if (interim) {
-        setLiveHear(interim)
-      } else {
-        setLiveHear('')
-      }
+    } catch {
+      // silent fail — next chunk will try again
     }
-
-    recognition.onerror = () => {
-      if (callActiveRef.current) {
-        setTimeout(() => startListening(), 500)
-      }
-    }
-
-    recognition.onend = () => {
-      if (callActiveRef.current) {
-        try {
-          recognition.start()
-        } catch {}
-      }
-    }
-
-    recognitionRef.current = recognition
-    recognition.start()
   }, [])
+
+  /* ── Continuous Recording ── */
+
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      streamRef.current = stream
+
+      // Pick best supported MIME type
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+          ? 'audio/webm'
+          : MediaRecorder.isTypeSupported('audio/mp4')
+            ? 'audio/mp4'
+            : 'audio/ogg'
+
+      const recorder = new MediaRecorder(stream, { mimeType })
+      mediaRecorderRef.current = recorder
+      chunksRef.current = []
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data)
+        }
+      }
+
+      // Collect chunks on a timer, send them for transcription
+      chunkTimerRef.current = setInterval(() => {
+        if (chunksRef.current.length === 0) return
+
+        const blob = new Blob(chunksRef.current, { type: mimeType })
+        chunksRef.current = []
+
+        // Restart recorder for next chunk
+        if (recorder.state === 'recording') {
+          recorder.stop()
+          recorder.start(1000) // resume with 1s timeslice
+        }
+
+        transcribeChunk(blob)
+      }, CHUNK_DURATION)
+
+      recorder.start(1000) // collect data every 1s
+      setListening(true)
+
+    } catch (err) {
+      console.error('Microphone access denied:', err)
+      setListening(false)
+    }
+  }, [transcribeChunk])
+
+  function stopRecording() {
+    setListening(false)
+    setLiveHear('')
+
+    if (chunkTimerRef.current) {
+      clearInterval(chunkTimerRef.current)
+      chunkTimerRef.current = null
+    }
+
+    // Send any remaining chunks
+    if (chunksRef.current.length > 0 && mediaRecorderRef.current) {
+      const mimeType = mediaRecorderRef.current.mimeType
+      const blob = new Blob(chunksRef.current, { type: mimeType })
+      chunksRef.current = []
+      transcribeChunk(blob)
+    }
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop()
+      mediaRecorderRef.current = null
+    }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop())
+      streamRef.current = null
+    }
+  }
 
   function toggleListening() {
     if (listening) {
-      callActiveRef.current = false
-      setListening(false)
-      setLiveHear('')
-      if (recognitionRef.current) {
-        recognitionRef.current.onend = null
-        recognitionRef.current.abort()
-        recognitionRef.current = null
-      }
+      stopRecording()
     } else {
-      callActiveRef.current = true
-      setListening(true)
       // Warm up TTS
       const warmup = new SpeechSynthesisUtterance('')
       warmup.volume = 0
       speechSynthesis.speak(warmup)
       speechSynthesis.getVoices()
-      startListening()
+      startRecording()
     }
   }
 
   useEffect(() => {
     return () => {
-      callActiveRef.current = false
-      if (recognitionRef.current) {
-        recognitionRef.current.onend = null
-        recognitionRef.current.abort()
+      if (chunkTimerRef.current) clearInterval(chunkTimerRef.current)
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop()
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop())
       }
       speechSynthesis.cancel()
     }
@@ -232,7 +280,7 @@ export default function AssistantPage() {
             onClick={toggleListening}
           >
             <span className="listen-icon">{listening ? '🔴' : '🎤'}</span>
-            {listening ? 'Listening' : 'Start Listening'}
+            {listening ? 'Listening (Groq)' : 'Start Listening'}
           </button>
           {messages.length > 0 && (
             <button className="clear-btn" onClick={() => setMessages([])}>Clear</button>
@@ -242,17 +290,16 @@ export default function AssistantPage() {
 
       <div className="assistant-body">
         {/* Passive hearing log */}
-        {(listening || transcript.length > 0 || liveHear) && (
+        {(listening || transcript.length > 0) && (
           <div className="hearing-section">
             <div className="hearing-label">
               <span className="hearing-icon">{listening ? '🔴' : '👂'}</span>
-              {listening ? 'Hearing' : 'Heard'}
+              {listening ? 'Hearing (Groq Whisper)' : 'Heard'}
             </div>
             <div className="hearing-log">
               {transcript.map((t, i) => (
                 <span key={i} className="heard-text">{t.text}</span>
               ))}
-              {liveHear && <span className="heard-text interim">{liveHear}</span>}
             </div>
           </div>
         )}
