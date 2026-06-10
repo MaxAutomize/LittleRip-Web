@@ -5,23 +5,21 @@ import { clean } from '../models'
 
 const ASSISTANT_PROMPT = `You are LittleRip, an assistant. The user's speech is being transcribed live — you are passively aware of their environment and anything said aloud. Only respond when the user sends you a typed message. When they do, use the context of what you've overheard to inform your response. Keep responses concise and helpful.`
 
-const CHUNK_DURATION = 4000 // ms per audio chunk sent to Groq
-
 export default function AssistantPage() {
   const [messages, setMessages] = useState([])
   const [transcript, setTranscript] = useState([])
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [listening, setListening] = useState(false)
-  const [liveHear, setLiveHear] = useState('')
+  const [transcribing, setTranscribing] = useState(false)
 
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const mediaRecorderRef = useRef(null)
-  const streamRef = useRef(null)
-  const chunkTimerRef = useRef(null)
-  const transcriptRef = useRef([])
   const chunksRef = useRef([])
+  const transcriptRef = useRef([])
+  const callActiveRef = useRef(false)
+  const chunkIntervalRef = useRef(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -42,134 +40,113 @@ export default function AssistantPage() {
     speechSynthesis.speak(utt)
   }, [])
 
-  /* ── Send audio chunk to Groq Whisper via /api/transcribe ── */
+  /* ── Groq Whisper Transcription ── */
 
   const transcribeChunk = useCallback(async (audioBlob) => {
-    if (!audioBlob || audioBlob.size < 1000) return // skip tiny/empty chunks
+    if (!audioBlob || audioBlob.size < 1000) return
 
+    setTranscribing(true)
     try {
       const formData = new FormData()
-      const ext = audioBlob.type.includes('webm') ? 'webm' : audioBlob.type.includes('mp4') ? 'mp4' : 'ogg'
-      formData.append('file', audioBlob, `recording.${ext}`)
+      formData.append('file', audioBlob, 'recording.webm')
 
       const res = await fetch('/api/transcribe', {
         method: 'POST',
         body: formData,
       })
 
-      if (!res.ok) return
-
-      const data = await res.json()
-      const text = data.text?.trim()
-      if (text && text !== '[BLANK_AUDIO]') {
-        transcriptRef.current = [...transcriptRef.current, { text, time: Date.now() }]
-        setTranscript([...transcriptRef.current])
+      if (res.ok) {
+        const data = await res.json()
+        const text = data.text?.trim()
+        if (text) {
+          transcriptRef.current = [...transcriptRef.current, { text, time: Date.now() }]
+          setTranscript([...transcriptRef.current])
+        }
       }
-    } catch {
-      // silent fail — next chunk will try again
-    }
+    } catch {}
+    setTranscribing(false)
   }, [])
 
-  /* ── Continuous Recording ── */
+  /* ── MediaRecorder Continuous Listening ── */
 
-  const startRecording = useCallback(async () => {
+  const startListening = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      streamRef.current = stream
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus'
+          : 'audio/webm',
+      })
 
-      // Pick best supported MIME type
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : MediaRecorder.isTypeSupported('audio/webm')
-          ? 'audio/webm'
-          : MediaRecorder.isTypeSupported('audio/mp4')
-            ? 'audio/mp4'
-            : 'audio/ogg'
-
-      const recorder = new MediaRecorder(stream, { mimeType })
-      mediaRecorderRef.current = recorder
       chunksRef.current = []
 
-      recorder.ondataavailable = (e) => {
+      mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
           chunksRef.current.push(e.data)
         }
       }
 
-      // Collect chunks on a timer, send them for transcription
-      chunkTimerRef.current = setInterval(() => {
-        if (chunksRef.current.length === 0) return
-
-        const blob = new Blob(chunksRef.current, { type: mimeType })
-        chunksRef.current = []
-
-        // Restart recorder for next chunk
-        if (recorder.state === 'recording') {
-          recorder.stop()
-          recorder.start(1000) // resume with 1s timeslice
+      // Send chunks every 5 seconds for transcription
+      chunkIntervalRef.current = setInterval(() => {
+        if (chunksRef.current.length > 0 && callActiveRef.current) {
+          const blob = new Blob(chunksRef.current, { type: mediaRecorder.mimeType })
+          chunksRef.current = []
+          transcribeChunk(blob)
         }
+      }, 5000)
 
-        transcribeChunk(blob)
-      }, CHUNK_DURATION)
-
-      recorder.start(1000) // collect data every 1s
-      setListening(true)
-
+      mediaRecorder.start(1000) // collect data every second
+      mediaRecorderRef.current = mediaRecorder
     } catch (err) {
-      console.error('Microphone access denied:', err)
+      console.error('Mic access denied:', err)
       setListening(false)
+      callActiveRef.current = false
     }
   }, [transcribeChunk])
 
-  function stopRecording() {
-    setListening(false)
-    setLiveHear('')
-
-    if (chunkTimerRef.current) {
-      clearInterval(chunkTimerRef.current)
-      chunkTimerRef.current = null
-    }
-
-    // Send any remaining chunks
-    if (chunksRef.current.length > 0 && mediaRecorderRef.current) {
-      const mimeType = mediaRecorderRef.current.mimeType
-      const blob = new Blob(chunksRef.current, { type: mimeType })
-      chunksRef.current = []
-      transcribeChunk(blob)
-    }
-
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop()
-      mediaRecorderRef.current = null
-    }
-
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop())
-      streamRef.current = null
-    }
-  }
-
   function toggleListening() {
     if (listening) {
-      stopRecording()
+      callActiveRef.current = false
+      setListening(false)
+
+      // Send any remaining chunks
+      if (chunksRef.current.length > 0) {
+        const blob = new Blob(chunksRef.current, { type: mediaRecorderRef.current?.mimeType || 'audio/webm' })
+        chunksRef.current = []
+        transcribeChunk(blob)
+      }
+
+      if (chunkIntervalRef.current) {
+        clearInterval(chunkIntervalRef.current)
+        chunkIntervalRef.current = null
+      }
+
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop()
+        mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop())
+        mediaRecorderRef.current = null
+      }
     } else {
+      callActiveRef.current = true
+      setListening(true)
+
       // Warm up TTS
       const warmup = new SpeechSynthesisUtterance('')
       warmup.volume = 0
       speechSynthesis.speak(warmup)
       speechSynthesis.getVoices()
-      startRecording()
+
+      startListening()
     }
   }
 
   useEffect(() => {
     return () => {
-      if (chunkTimerRef.current) clearInterval(chunkTimerRef.current)
+      callActiveRef.current = false
+      if (chunkIntervalRef.current) clearInterval(chunkIntervalRef.current)
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop()
-      }
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(t => t.stop())
+        mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop())
       }
       speechSynthesis.cancel()
     }
@@ -187,7 +164,6 @@ export default function AssistantPage() {
     setInput('')
     setStreaming(true)
 
-    // Build context: system prompt + overheard speech + messages
     const heardContext = transcriptRef.current.length > 0
       ? transcriptRef.current.map(t => t.text).join(' ')
       : ''
@@ -197,7 +173,6 @@ export default function AssistantPage() {
       systemParts.push(`Overheard speech (passive context, the user did not type this): "${heardContext}"`)
     }
     const systemMessage = { role: 'system', content: systemParts.join('\n\n') }
-
     const apiMessages = [systemMessage, ...updated]
 
     try {
@@ -250,9 +225,7 @@ export default function AssistantPage() {
         }
       }
 
-      // Speak the response
       speak(fullResponse)
-
     } catch (err) {
       setMessages((prev) => [...prev, { role: 'assistant', content: `Connection error: ${err.message}` }])
     }
@@ -280,7 +253,7 @@ export default function AssistantPage() {
             onClick={toggleListening}
           >
             <span className="listen-icon">{listening ? '🔴' : '🎤'}</span>
-            {listening ? 'Listening (Groq)' : 'Start Listening'}
+            {transcribing ? 'Transcribing…' : listening ? 'Listening' : 'Start Listening'}
           </button>
           {messages.length > 0 && (
             <button className="clear-btn" onClick={() => setMessages([])}>Clear</button>
@@ -289,22 +262,21 @@ export default function AssistantPage() {
       </header>
 
       <div className="assistant-body">
-        {/* Passive hearing log */}
         {(listening || transcript.length > 0) && (
           <div className="hearing-section">
             <div className="hearing-label">
               <span className="hearing-icon">{listening ? '🔴' : '👂'}</span>
-              {listening ? 'Hearing (Groq Whisper)' : 'Heard'}
+              {listening ? 'Hearing' : 'Heard'}
             </div>
             <div className="hearing-log">
               {transcript.map((t, i) => (
                 <span key={i} className="heard-text">{t.text}</span>
               ))}
+              {transcribing && <span className="heard-text interim">transcribing…</span>}
             </div>
           </div>
         )}
 
-        {/* Chat messages */}
         {messages.length === 0 && transcript.length === 0 && !listening && (
           <div className="empty-state" />
         )}
@@ -329,7 +301,6 @@ export default function AssistantPage() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKey}
           placeholder="Message LittleRip…"
-          disabled={streaming}
           rows={1}
         />
         <button
