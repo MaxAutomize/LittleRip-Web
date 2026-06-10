@@ -216,13 +216,12 @@ body {
   font-family: var(--serif);
   font-size: clamp(5rem, 16vw, 14rem);
   font-weight: 400;
-  font-style: italic;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: #fffaf0;
   text-align: center;
   margin-top: 6vh;
   margin-bottom: auto;
-  transform: scaleX(1.18);
   filter: drop-shadow(0 12px 30px rgba(167, 118, 38, 0.14));
 }
 
