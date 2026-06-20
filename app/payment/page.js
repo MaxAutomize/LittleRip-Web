@@ -7,23 +7,29 @@ const OPTIONS = [
   {
     key: 'onetime',
     name: 'One-Time',
-    price: '$1,000',
     sub: 'Single payment',
-    blurb: 'Pay once. No recurring charges.',
+    blurb: 'Pay a custom amount once. No recurring charges.',
+    placeholder: 'e.g. 100',
   },
   {
     key: 'monthly',
     name: 'Monthly',
-    price: '$1,000',
     sub: '/ month',
-    blurb: 'Recurring subscription billed every month. Cancel anytime.',
+    blurb: 'Custom recurring subscription billed every month. Cancel anytime.',
+    placeholder: 'e.g. 25',
   },
 ]
+
+function validAmount(v) {
+  const n = Number(v)
+  return Number.isFinite(n) && n >= 1 && n <= 1000000
+}
 
 export default function PaymentPage() {
   const [loading, setLoading] = useState(null)
   const [status, setStatus] = useState(null)
   const [error, setError] = useState(null)
+  const [amounts, setAmounts] = useState({ onetime: '', monthly: '' })
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -33,12 +39,17 @@ export default function PaymentPage() {
 
   async function pay(optionKey) {
     setError(null)
+    const raw = amounts[optionKey]
+    if (!validAmount(raw)) {
+      setError('Please enter a valid amount between $1.00 and $1,000,000.00.')
+      return
+    }
     setLoading(optionKey)
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ option: optionKey }),
+        body: JSON.stringify({ option: optionKey, amount: raw }),
       })
       const data = await res.json()
       if (!res.ok || !data.url) {
@@ -63,7 +74,7 @@ export default function PaymentPage() {
         Payment
       </h1>
       <p className="menu-sub" style={{ marginBottom: 40 }}>
-        Choose how you&apos;d like to pay
+        Choose an option and enter the amount
       </p>
 
       {status === 'success' && (
@@ -84,11 +95,26 @@ export default function PaymentPage() {
         {OPTIONS.map((o) => (
           <div className="pay-card" key={o.key}>
             <div className="pay-card-name">{o.name}</div>
-            <div className="pay-card-price">
-              {o.price}
-              <span className="pay-card-sub">{o.sub}</span>
-            </div>
+            <div className="pay-card-sub-inline">{o.sub}</div>
             <div className="pay-card-blurb">{o.blurb}</div>
+
+            <div className="pay-amount-wrap">
+              <span className="pay-amount-sign">$</span>
+              <input
+                className="pay-amount-input"
+                type="number"
+                inputMode="decimal"
+                min="1"
+                step="0.01"
+                placeholder={o.placeholder}
+                value={amounts[o.key]}
+                onChange={(e) =>
+                  setAmounts((a) => ({ ...a, [o.key]: e.target.value }))
+                }
+                disabled={loading !== null}
+              />
+            </div>
+
             <button
               className="pay-btn"
               onClick={() => pay(o.key)}

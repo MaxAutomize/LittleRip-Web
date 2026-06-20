@@ -1,29 +1,26 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-// Two options for LittleRip.
-// - onetime : a single $1,000 payment
-// - monthly : a $1,000/month recurring subscription
-// Amounts are in USD cents.
-const OPTIONS = {
-  onetime: {
-    name: 'LittleRip One-Time',
-    amount: 100000, // $1,000.00
-    description: 'A one-time payment',
-    mode: 'payment',
-  },
-  monthly: {
-    name: 'LittleRip Monthly',
-    amount: 100000, // $1,000.00
-    description: 'Recurring subscription — billed monthly',
-    mode: 'subscription',
-  },
-}
+// Two options for LittleRip, both custom-amount:
+// - onetime : a single custom payment
+// - monthly : a custom recurring subscription billed every month
+// The customer chooses the amount on the page; the API receives it in dollars.
+
+const MIN_CENTS = 100      // $1.00 minimum
+const MAX_CENTS = 1000000_00 // $1,000,000.00 maximum
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
   if (!key) return null
   return new Stripe(key, { apiVersion: '2024-06-20' })
+}
+
+function parseAmount(dollars) {
+  const n = Number(dollars)
+  if (!Number.isFinite(n) || n <= 0) return null
+  const cents = Math.round(n * 100)
+  if (cents < MIN_CENTS || cents > MAX_CENTS) return null
+  return cents
 }
 
 export async function POST(request) {
@@ -42,8 +39,16 @@ export async function POST(request) {
     body = {}
   }
 
-  const key = body?.option && OPTIONS[body.option] ? body.option : 'onetime'
-  const opt = OPTIONS[key]
+  const option = body?.option === 'monthly' ? 'monthly' : 'onetime'
+  const isSubscription = option === 'monthly'
+
+  const cents = parseAmount(body?.amount)
+  if (cents == null) {
+    return NextResponse.json(
+      { error: 'Please enter a valid amount between $1.00 and $1,000,000.00.' },
+      { status: 400 }
+    )
+  }
 
   const origin = request.headers.get('origin') || 'https://littlerip.vercel.app'
 
@@ -51,27 +56,28 @@ export async function POST(request) {
     quantity: 1,
     price_data: {
       currency: 'usd',
-      unit_amount: opt.amount,
+      unit_amount: cents,
       product_data: {
-        name: opt.name,
-        description: opt.description,
+        name: isSubscription ? 'LittleRip Monthly' : 'LittleRip One-Time',
+        description: isSubscription
+          ? `Recurring $${(cents / 100).toFixed(2)} billed monthly`
+          : `One-time payment of $${(cents / 100).toFixed(2)}`,
       },
     },
   }
 
-  // For subscriptions, add the recurring interval.
-  if (opt.mode === 'subscription') {
+  if (isSubscription) {
     lineItem.price_data.recurring = { interval: 'month' }
   }
 
   try {
     const session = await stripe.checkout.sessions.create({
-      mode: opt.mode,
+      mode: isSubscription ? 'subscription' : 'payment',
       payment_method_types: ['card'],
       line_items: [lineItem],
-      success_url: `${origin}/payment?status=success&option=${key}`,
+      success_url: `${origin}/payment?status=success&option=${option}`,
       cancel_url: `${origin}/payment?status=cancel`,
-      metadata: { option: key },
+      metadata: { option, amount_cents: String(cents) },
     })
 
     return NextResponse.json({ url: session.url })
