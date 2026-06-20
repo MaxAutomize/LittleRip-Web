@@ -5,23 +5,18 @@ import { clean } from '../models'
 
 const ASSISTANT_PROMPT = `You are LittleRip, an assistant. The user's speech is being transcribed live — you are passively aware of their environment and anything said aloud. Only respond when the user sends you a typed message. When they do, use the context of what you've overheard to inform your response. Keep responses concise and helpful.`
 
-const CHUNK_DURATION = 4000 // ms per audio chunk sent to Groq
-
 export default function AssistantPage() {
   const [messages, setMessages] = useState([])
   const [transcript, setTranscript] = useState([])
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [listening, setListening] = useState(false)
-  const [liveHear, setLiveHear] = useState('')
 
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
-  const mediaRecorderRef = useRef(null)
-  const streamRef = useRef(null)
-  const chunkTimerRef = useRef(null)
+  const recognitionRef = useRef(null)
+  const listeningRef = useRef(false)
   const transcriptRef = useRef([])
-  const chunksRef = useRef([])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -42,134 +37,107 @@ export default function AssistantPage() {
     speechSynthesis.speak(utt)
   }, [])
 
-  /* ── Send audio chunk to Groq Whisper via /api/transcribe ── */
+  /* ── Native SpeechRecognition (passive hearing) ── */
+  // Uses the browser's built-in Web Speech API instead of Groq Whisper.
+  // Continuously transcribes anything said aloud into the passive hearing log.
 
-  const transcribeChunk = useCallback(async (audioBlob) => {
-    if (!audioBlob || audioBlob.size < 1000) return // skip tiny/empty chunks
+  const startRecognition = useCallback(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      console.error('SpeechRecognition not supported in this browser')
+      setListening(false)
+      return
+    }
 
-    try {
-      const formData = new FormData()
-      const ext = audioBlob.type.includes('webm') ? 'webm' : audioBlob.type.includes('mp4') ? 'mp4' : 'ogg'
-      formData.append('file', audioBlob, `recording.${ext}`)
+    // Tear down any existing instance first
+    if (recognitionRef.current) {
+      recognitionRef.current.onresult = null
+      recognitionRef.current.onerror = null
+      recognitionRef.current.onend = null
+      try { recognitionRef.current.abort() } catch {}
+    }
 
-      const res = await fetch('/api/transcribe', {
-        method: 'POST',
-        body: formData,
-      })
+    const recognition = new SpeechRecognition()
+    recognition.continuous = true
+    recognition.interimResults = true
+    recognition.lang = 'en-US'
 
-      if (!res.ok) return
-
-      const data = await res.json()
-      const text = data.text?.trim()
-      if (text && text !== '[BLANK_AUDIO]') {
-        transcriptRef.current = [...transcriptRef.current, { text, time: Date.now() }]
-        setTranscript([...transcriptRef.current])
+    recognition.onresult = (event) => {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i]
+        if (result.isFinal) {
+          const text = result[0].transcript.trim()
+          if (text) {
+            transcriptRef.current = [...transcriptRef.current, { text, time: Date.now() }]
+            setTranscript([...transcriptRef.current])
+          }
+        }
       }
-    } catch {
-      // silent fail — next chunk will try again
+    }
+
+    recognition.onerror = (e) => {
+      console.warn('SpeechRecognition error:', e.error)
+      // Auto-restart as long as listening is still on (handles transient errors)
+      if (listeningRef.current && e.error !== 'not-allowed' && e.error !== 'service-not-allowed') {
+        setTimeout(() => {
+          if (listeningRef.current) startRecognition()
+        }, 400)
+      }
+    }
+
+    recognition.onend = () => {
+      // Some browsers stop recognition after a silence — restart it
+      if (listeningRef.current) {
+        setTimeout(() => {
+          if (listeningRef.current) startRecognition()
+        }, 300)
+      }
+    }
+
+    recognitionRef.current = recognition
+    try {
+      recognition.start()
+    } catch (err) {
+      console.error('SpeechRecognition start failed:', err)
     }
   }, [])
 
-  /* ── Continuous Recording ── */
-
-  const startRecording = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      streamRef.current = stream
-
-      // Pick best supported MIME type
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : MediaRecorder.isTypeSupported('audio/webm')
-          ? 'audio/webm'
-          : MediaRecorder.isTypeSupported('audio/mp4')
-            ? 'audio/mp4'
-            : 'audio/ogg'
-
-      const recorder = new MediaRecorder(stream, { mimeType })
-      mediaRecorderRef.current = recorder
-      chunksRef.current = []
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunksRef.current.push(e.data)
-        }
-      }
-
-      // Collect chunks on a timer, send them for transcription
-      chunkTimerRef.current = setInterval(() => {
-        if (chunksRef.current.length === 0) return
-
-        const blob = new Blob(chunksRef.current, { type: mimeType })
-        chunksRef.current = []
-
-        // Restart recorder for next chunk
-        if (recorder.state === 'recording') {
-          recorder.stop()
-          recorder.start(1000) // resume with 1s timeslice
-        }
-
-        transcribeChunk(blob)
-      }, CHUNK_DURATION)
-
-      recorder.start(1000) // collect data every 1s
-      setListening(true)
-
-    } catch (err) {
-      console.error('Microphone access denied:', err)
-      setListening(false)
-    }
-  }, [transcribeChunk])
-
-  function stopRecording() {
+  function stopRecognition() {
+    listeningRef.current = false
     setListening(false)
-    setLiveHear('')
-
-    if (chunkTimerRef.current) {
-      clearInterval(chunkTimerRef.current)
-      chunkTimerRef.current = null
-    }
-
-    // Send any remaining chunks
-    if (chunksRef.current.length > 0 && mediaRecorderRef.current) {
-      const mimeType = mediaRecorderRef.current.mimeType
-      const blob = new Blob(chunksRef.current, { type: mimeType })
-      chunksRef.current = []
-      transcribeChunk(blob)
-    }
-
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop()
-      mediaRecorderRef.current = null
-    }
-
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop())
-      streamRef.current = null
+    if (recognitionRef.current) {
+      recognitionRef.current.onresult = null
+      recognitionRef.current.onerror = null
+      recognitionRef.current.onend = null
+      try { recognitionRef.current.abort() } catch {}
+      recognitionRef.current = null
     }
   }
 
   function toggleListening() {
     if (listening) {
-      stopRecording()
+      stopRecognition()
     } else {
-      // Warm up TTS
+      // Warm up TTS voices
       const warmup = new SpeechSynthesisUtterance('')
       warmup.volume = 0
       speechSynthesis.speak(warmup)
       speechSynthesis.getVoices()
-      startRecording()
+
+      listeningRef.current = true
+      setListening(true)
+      startRecognition()
     }
   }
 
   useEffect(() => {
     return () => {
-      if (chunkTimerRef.current) clearInterval(chunkTimerRef.current)
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop()
-      }
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(t => t.stop())
+      listeningRef.current = false
+      if (recognitionRef.current) {
+        recognitionRef.current.onresult = null
+        recognitionRef.current.onerror = null
+        recognitionRef.current.onend = null
+        try { recognitionRef.current.abort() } catch {}
       }
       speechSynthesis.cancel()
     }
@@ -204,7 +172,7 @@ export default function AssistantPage() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: apiMessages, model: 'deepseek-v4-pro:cloud' }),
+        body: JSON.stringify({ messages: apiMessages, model: 'glm-5.2:cloud' }),
       })
 
       if (!res.ok) {
@@ -280,7 +248,7 @@ export default function AssistantPage() {
             onClick={toggleListening}
           >
             <span className="listen-icon">{listening ? '🔴' : '🎤'}</span>
-            {listening ? 'Listening (Groq)' : 'Start Listening'}
+            {listening ? 'Listening' : 'Start Listening'}
           </button>
           {messages.length > 0 && (
             <button className="clear-btn" onClick={() => setMessages([])}>Clear</button>
@@ -294,7 +262,7 @@ export default function AssistantPage() {
           <div className="hearing-section">
             <div className="hearing-label">
               <span className="hearing-icon">{listening ? '🔴' : '👂'}</span>
-              {listening ? 'Hearing (Groq Whisper)' : 'Heard'}
+              {listening ? 'Hearing' : 'Heard'}
             </div>
             <div className="hearing-log">
               {transcript.map((t, i) => (
