@@ -1,19 +1,28 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-// Plan tiers for LittleRip. Amounts are in USD cents.
-// Change these to match the products/prices you set up in your Stripe dashboard.
-const PLANS = {
-  tip:    { name: 'LittleRip Tip',        amount: 500,  description: 'A small thank-you tip' },
-  basic:  { name: 'LittleRip Basic',     amount: 1000, description: 'Basic access plan' },
-  pro:    { name: 'LittleRip Pro',       amount: 2500, description: 'Pro access plan' },
-  founder:{ name: 'LittleRip Founder',   amount: 10000, description: 'Founder / lifetime tier' },
+// Two options for LittleRip.
+// - onetime : a single $1,000 payment
+// - monthly : a $1,000/month recurring subscription
+// Amounts are in USD cents.
+const OPTIONS = {
+  onetime: {
+    name: 'LittleRip One-Time',
+    amount: 100000, // $1,000.00
+    description: 'A one-time payment',
+    mode: 'payment',
+  },
+  monthly: {
+    name: 'LittleRip Monthly',
+    amount: 100000, // $1,000.00
+    description: 'Recurring subscription — billed monthly',
+    mode: 'subscription',
+  },
 }
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
   if (!key) return null
-  // 2024-06-20 stable API version; adjust if your account uses a different one
   return new Stripe(key, { apiVersion: '2024-06-20' })
 }
 
@@ -33,31 +42,36 @@ export async function POST(request) {
     body = {}
   }
 
-  const planKey = body?.plan && PLANS[body.plan] ? body.plan : 'tip'
-  const plan = PLANS[planKey]
+  const key = body?.option && OPTIONS[body.option] ? body.option : 'onetime'
+  const opt = OPTIONS[key]
 
   const origin = request.headers.get('origin') || 'https://littlerip.vercel.app'
 
+  const lineItem = {
+    quantity: 1,
+    price_data: {
+      currency: 'usd',
+      unit_amount: opt.amount,
+      product_data: {
+        name: opt.name,
+        description: opt.description,
+      },
+    },
+  }
+
+  // For subscriptions, add the recurring interval.
+  if (opt.mode === 'subscription') {
+    lineItem.price_data.recurring = { interval: 'month' }
+  }
+
   try {
     const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
+      mode: opt.mode,
       payment_method_types: ['card'],
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: 'usd',
-            unit_amount: plan.amount,
-            product_data: {
-              name: plan.name,
-              description: plan.description,
-            },
-          },
-        },
-      ],
-      success_url: `${origin}/payment?status=success&plan=${planKey}`,
+      line_items: [lineItem],
+      success_url: `${origin}/payment?status=success&option=${key}`,
       cancel_url: `${origin}/payment?status=cancel`,
-      metadata: { plan: planKey },
+      metadata: { option: key },
     })
 
     return NextResponse.json({ url: session.url })

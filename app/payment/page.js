@@ -3,11 +3,21 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-const PLANS = [
-  { key: 'tip',     name: 'Tip',        price: '$5',    blurb: 'A small thank-you' },
-  { key: 'basic',   name: 'Basic',      price: '$10',   blurb: 'Basic access plan' },
-  { key: 'pro',     name: 'Pro',        price: '$25',   blurb: 'Pro access plan' },
-  { key: 'founder', name: 'Founder',    price: '$100',  blurb: 'Lifetime founder tier' },
+const OPTIONS = [
+  {
+    key: 'onetime',
+    name: 'One-Time',
+    price: '$1,000',
+    sub: 'Single payment',
+    blurb: 'Pay once. No recurring charges.',
+  },
+  {
+    key: 'monthly',
+    name: 'Monthly',
+    price: '$1,000',
+    sub: '/ month',
+    blurb: 'Recurring subscription billed every month. Cancel anytime.',
+  },
 ]
 
 export default function PaymentPage() {
@@ -21,14 +31,14 @@ export default function PaymentPage() {
     if (s === 'success' || s === 'cancel') setStatus(s)
   }, [])
 
-  async function pay(planKey) {
+  async function pay(optionKey) {
     setError(null)
-    setLoading(planKey)
+    setLoading(optionKey)
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: planKey }),
+        body: JSON.stringify({ option: optionKey }),
       })
       const data = await res.json()
       if (!res.ok || !data.url) {
@@ -36,7 +46,6 @@ export default function PaymentPage() {
         setLoading(null)
         return
       }
-      // Redirect to Stripe-hosted Checkout
       window.location.href = data.url
     } catch (e) {
       setError(e.message)
@@ -54,7 +63,7 @@ export default function PaymentPage() {
         Payment
       </h1>
       <p className="menu-sub" style={{ marginBottom: 40 }}>
-        Support LittleRip — choose a tier
+        Choose how you&apos;d like to pay
       </p>
 
       {status === 'success' && (
@@ -71,18 +80,21 @@ export default function PaymentPage() {
         <div className="pay-banner pay-banner-err">{error}</div>
       )}
 
-      <div className="pay-grid">
-        {PLANS.map((p) => (
-          <div className="pay-card" key={p.key}>
-            <div className="pay-card-name">{p.name}</div>
-            <div className="pay-card-price">{p.price}</div>
-            <div className="pay-card-blurb">{p.blurb}</div>
+      <div className="pay-grid pay-grid-two">
+        {OPTIONS.map((o) => (
+          <div className="pay-card" key={o.key}>
+            <div className="pay-card-name">{o.name}</div>
+            <div className="pay-card-price">
+              {o.price}
+              <span className="pay-card-sub">{o.sub}</span>
+            </div>
+            <div className="pay-card-blurb">{o.blurb}</div>
             <button
               className="pay-btn"
-              onClick={() => pay(p.key)}
+              onClick={() => pay(o.key)}
               disabled={loading !== null}
             >
-              {loading === p.key ? 'Redirecting…' : `Pay ${p.price}`}
+              {loading === o.key ? 'Redirecting…' : 'Pay with Stripe'}
             </button>
           </div>
         ))}

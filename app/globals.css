@@ -997,3 +997,22 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.pay-grid-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 560px;
+}
+.pay-card-sub {
+  display: block;
+  font-family: var(--body);
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 2px;
+}
+@media (max-width: 520px) {
+  .pay-grid-two {
+    grid-template-columns: 1fr;
+    max-width: 320px;
+  }
+}
