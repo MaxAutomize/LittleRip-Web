@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-// Two options for LittleRip, both custom-amount:
-// - onetime : a single custom payment
-// - monthly : a custom recurring subscription billed every month
-// The customer chooses the amount on the page; the API receives it in dollars.
-
-const MIN_CENTS = 100      // $1.00 minimum
+// One-time custom payment to LittleRip.
+const MIN_CENTS = 100        // $1.00 minimum
 const MAX_CENTS = 1000000_00 // $1,000,000.00 maximum
 
 function getStripe() {
@@ -39,9 +35,6 @@ export async function POST(request) {
     body = {}
   }
 
-  const option = body?.option === 'monthly' ? 'monthly' : 'onetime'
-  const isSubscription = option === 'monthly'
-
   const cents = parseAmount(body?.amount)
   if (cents == null) {
     return NextResponse.json(
@@ -50,34 +43,28 @@ export async function POST(request) {
     )
   }
 
-  const origin = request.headers.get('origin') || 'https://littlerip.vercel.app'
-
-  const lineItem = {
-    quantity: 1,
-    price_data: {
-      currency: 'usd',
-      unit_amount: cents,
-      product_data: {
-        name: isSubscription ? 'LittleRip Monthly' : 'LittleRip One-Time',
-        description: isSubscription
-          ? `Recurring $${(cents / 100).toFixed(2)} billed monthly`
-          : `One-time payment of $${(cents / 100).toFixed(2)}`,
-      },
-    },
-  }
-
-  if (isSubscription) {
-    lineItem.price_data.recurring = { interval: 'month' }
-  }
+  const origin = request.headers.get('origin') || 'https://littlerip.com'
 
   try {
     const session = await stripe.checkout.sessions.create({
-      mode: isSubscription ? 'subscription' : 'payment',
+      mode: 'payment',
       payment_method_types: ['card'],
-      line_items: [lineItem],
-      success_url: `${origin}/payment?status=success&option=${option}`,
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: 'usd',
+            unit_amount: cents,
+            product_data: {
+              name: 'LittleRip',
+              description: `One-time payment of $${(cents / 100).toFixed(2)}`,
+            },
+          },
+        },
+      ],
+      success_url: `${origin}/payment?status=success`,
       cancel_url: `${origin}/payment?status=cancel`,
-      metadata: { option, amount_cents: String(cents) },
+      metadata: { amount_cents: String(cents) },
     })
 
     return NextResponse.json({ url: session.url })

@@ -1060,3 +1060,35 @@ body {
   -webkit-appearance: none;
   margin: 0;
 }
+
+/* ── Payment (single) ── */
+
+.pay-single {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  width: min(440px, calc(100% - 40px));
+  padding-bottom: 60px;
+}
+
+.pay-amount-wrap-big {
+  max-width: 320px;
+  border-width: 1.5px;
+}
+.pay-amount-input-big {
+  font-size: 1.6rem;
+  padding: 16px 16px 16px 0;
+}
+.pay-amount-wrap-big .pay-amount-sign {
+  font-size: 1.6rem;
+  padding-left: 18px;
+}
+
+.pay-btn-big {
+  width: 100%;
+  max-width: 320px;
+  padding: 16px 20px;
+  font-size: 1.2rem;
+  border-radius: 12px;
+}
