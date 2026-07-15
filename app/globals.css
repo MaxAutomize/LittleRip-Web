@@ -283,9 +283,16 @@ body {
 }
 
 @media (max-width: 500px) {
+  .menu-shell {
+    /* Use the visible mobile viewport so the browser's address bar cannot push
+       the menu below the fold. */
+    min-height: 100svh;
+    min-height: 100dvh;
+  }
   .menu-options {
     gap: 24px;
-    padding-bottom: 42px;
+    /* Extra lift keeps the links clear of Safari/Chrome's bottom controls. */
+    padding-bottom: calc(78px + env(safe-area-inset-bottom));
   }
   .menu-card {
     font-size: 0.88rem;
