@@ -10,7 +10,7 @@ This is the web side of the LittleRip ecosystem, alongside:
 ## Routes
 
 - `/` — landing page with the arc-rainbow LittleRip title.
-- `/chat` — streaming chat UI using an Ollama-compatible `/v1/chat/completions` backend.
+- `/chat` — streaming Char chat UI using Ollama Cloud's `/v1/chat/completions` backend. Char is a serious fictional roleplay persona with South Park canon cross-referencing.
 - `/call` — browser voice call using Web Speech API speech-to-text and speech synthesis.
 - `/assistant` — passive-listening assistant page.
 - `/payment` — Stripe one-time custom-amount checkout.
@@ -27,7 +27,9 @@ This is the web side of the LittleRip ecosystem, alongside:
 
 All secrets live in local/Vercel environment variables and are never committed:
 
-- `OLLAMA_BASE_URL` — backend for chat/call/assistant, default `http://localhost:11434`
+- `OLLAMA_BASE_URL` — backend for chat/call/assistant; production should be `https://ollama.com` (local development may use `http://localhost:11434`)
+- `OLLAMA_API_KEY` — server-only Ollama Cloud API key from https://ollama.com/settings/keys
+- `OLLAMA_MODEL` — optional model override; defaults to `glm-5.1`
 - `STRIPE_SECRET_KEY` — Stripe checkout secret key
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — Stripe publishable client key
 

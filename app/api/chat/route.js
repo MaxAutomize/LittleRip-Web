@@ -1,19 +1,22 @@
 export const runtime = 'edge'
 
-import { getModelId } from '../../models'
+import { CHAR_SYSTEM_PROMPT, getModelId } from '../../models'
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-async function callOllama(url, body) {
+async function callOllama(url, body, apiKey) {
   let lastResponse = null
 
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
+      const headers = { 'Content-Type': 'application/json' }
+      if (apiKey) headers.Authorization = `Bearer ${apiKey}`
+
       const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(25000),
       })
@@ -46,24 +49,32 @@ async function callOllama(url, body) {
 
 export async function POST(req) {
   const { messages, model } = await req.json()
-  const ollamaUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
-  const selectedModel = model || getModelId()
+  const baseUrl = (process.env.OLLAMA_BASE_URL || 'https://ollama.com').replace(/\/$/, '')
+  const apiKey = process.env.OLLAMA_API_KEY?.trim()
+  const selectedModel = model || process.env.OLLAMA_MODEL || getModelId()
 
-  // If the client already included a system message (assistant mode), use it as-is.
-  // Otherwise, prepend a default one (chat/call mode).
-  let outgoing
-  if (messages[0]?.role === 'system') {
-    outgoing = messages
-  } else {
-    const systemMessage = { role: 'system', content: 'You are LittleRip.' }
-    outgoing = [systemMessage, ...messages]
+  // Vercel cannot reach a model running on a developer laptop. The production
+  // default is Ollama Cloud, matching the iOS app's https://ollama.com setup.
+  if (baseUrl === 'https://ollama.com' && !apiKey) {
+    return new Response(JSON.stringify({
+      error: 'Ollama Cloud is not configured. Add OLLAMA_API_KEY in Vercel project settings.',
+    }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 
-  const response = await callOllama(`${ollamaUrl}/v1/chat/completions`, {
+  // Preserve a deliberate system prompt from other routes, but normal chat gets
+  // the Char persona server-side so it cannot be changed by the browser.
+  const outgoing = messages?.[0]?.role === 'system'
+    ? messages
+    : [{ role: 'system', content: CHAR_SYSTEM_PROMPT }, ...(messages || [])]
+
+  const response = await callOllama(`${baseUrl}/v1/chat/completions`, {
     model: selectedModel,
     messages: outgoing,
     stream: true,
-  })
+  }, apiKey)
 
   if (!response.ok) {
     const text = await response.text()

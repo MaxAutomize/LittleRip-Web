@@ -106,7 +106,7 @@ export default function ChatPage() {
         )}
         {messages.map((m, i) => (
           <div key={i} className={`chat-msg ${m.role}`}>
-            <div className="msg-role">{m.role === 'user' ? 'You' : 'LittleRip'}</div>
+            <div className="msg-role">{m.role === 'user' ? 'You' : 'Char'}</div>
             <div className="msg-content">
               {m.role === 'assistant' ? clean(m.content) : m.content}
               {streaming && i === messages.length - 1 && m.role === 'assistant' && (
@@ -124,7 +124,7 @@ export default function ChatPage() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="Message LittleRip…"
+          placeholder="Message Char…"
           rows={1}
         />
         <button
