@@ -199,31 +199,6 @@ body {
   50% { opacity: 0; }
 }
 
-/* ── Rainbow Arc Container ── */
-
-.arc-container {
-  position: relative;
-  margin-bottom: auto;
-  flex-shrink: 0;
-}
-
-.arc-letter {
-  position: absolute;
-  font-family: var(--serif);
-  font-weight: 400;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #fffaf0;
-  line-height: 1;
-  transition: color 0.3s, text-shadow 0.3s;
-  filter: drop-shadow(0 4px 12px rgba(167, 118, 38, 0.14));
-}
-
-.arc-letter:hover {
-  color: var(--accent);
-  text-shadow: 0 0 28px rgba(201, 168, 76, 0.4);
-}
-
 .menu-shell {
   position: relative;
   display: flex;
