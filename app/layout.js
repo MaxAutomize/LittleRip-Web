@@ -2,7 +2,7 @@ import './globals.css'
 
 export const metadata = {
   title: 'LittleRip',
-  description: 'LittleRip — Cloud model voice & chat',
+  description: 'LittleRip — cloud chat, voice, and the Inner Monologue Loop',
 }
 
 export default function RootLayout({ children }) {
