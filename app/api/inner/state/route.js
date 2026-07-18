@@ -18,12 +18,19 @@ export async function GET() {
       ON CONFLICT (user_id) DO NOTHING
     `
 
-    const [profiles, cycles, reflections, topics, memoryItems, inputs] = await Promise.all([
+    const [profiles, cycles, lastShares, reflections, topics, memoryItems] = await Promise.all([
       sql`SELECT * FROM inner_profiles WHERE user_id = ${user.id} LIMIT 1`,
       sql`
         SELECT * FROM inner_cycles
         WHERE user_id = ${user.id} AND status = 'active'
         ORDER BY started_at DESC
+        LIMIT 1
+      `,
+      sql`
+        SELECT spoken_sentence
+        FROM inner_cycles
+        WHERE user_id = ${user.id} AND status = 'complete' AND spoken_sentence <> ''
+        ORDER BY completed_at DESC
         LIMIT 1
       `,
       sql`
@@ -50,13 +57,6 @@ export async function GET() {
         ORDER BY i.created_at DESC
         LIMIT 120
       `,
-      sql`
-        SELECT id, content, created_at, consumed_at
-        FROM inner_inputs
-        WHERE user_id = ${user.id}
-        ORDER BY created_at DESC
-        LIMIT 30
-      `,
     ])
 
     const activeCycle = cycles[0] || null
@@ -76,11 +76,11 @@ export async function GET() {
       user,
       profile: profiles[0],
       cycle: activeCycle,
+      lastSpokenSentence: lastShares[0]?.spoken_sentence || '',
       pendingStep,
       reflections: reflections.reverse(),
       topics,
       memoryItems,
-      inputs: inputs.reverse(),
     })
   } catch (error) {
     console.error('Inner Monologue state failed:', error)

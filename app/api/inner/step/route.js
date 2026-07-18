@@ -6,7 +6,6 @@ import { INNER_MODEL } from '../../../../lib/inner-config'
 import {
   buildInnerSystem,
   estimateTokens,
-  normalizeSpokenSentence,
 } from '../../../../lib/inner-model'
 
 export const maxDuration = 300
@@ -16,25 +15,9 @@ const TRACE_METADATA_FORMAT = {
   type: 'object',
   properties: {
     focus: { type: 'string' },
-    spokenSentence: { type: 'string' },
+    marker: { type: 'string' },
   },
-  required: ['focus', 'spokenSentence'],
-}
-
-function parseMetadata(content, fallbackFocus, fallbackSentence) {
-  const raw = String(content || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')
-  try {
-    const parsed = JSON.parse(raw)
-    return {
-      focus: String(parsed.focus || fallbackFocus || 'Ongoing consciousness inquiry').slice(0, 120),
-      sentence: normalizeSpokenSentence(parsed.spokenSentence),
-    }
-  } catch {
-    return {
-      focus: String(fallbackFocus || 'Ongoing consciousness inquiry').slice(0, 120),
-      sentence: normalizeSpokenSentence(raw || fallbackSentence),
-    }
-  }
+  required: ['focus', 'marker'],
 }
 
 export async function POST(request) {
@@ -138,7 +121,7 @@ export async function POST(request) {
   const previous = recent[0]
 
   const contextMessage = `MEMORY FOLDER INDEX:\n${memoryIndex}\n\nRECENT MEMORY ITEMS:\n${selectedMemory}\n\nNEW USER INPUT TO WEAVE INTO THE SAME INQUIRY:\n${inputContext}`
-  const finalInstruction = `Continue one uninterrupted line of reasoning. Use high effort and let the native thinking trace carry the exploration. Do not restart, introduce yourself, write headings, or summarize every minute. When the reasoning segment naturally ends, put only private metadata in final content as JSON: a short focus label and one sentence of at most 28 words worth speaking after the five-minute cycle.`
+  const finalInstruction = `Continue from the last thought without repeating these instructions. Make up one wild theory that ties together the brain doing things before "you" know, personal taste, dreams, and what endless energy might do to a brain-like thing. Beat the theory up. Find what is dumb about it. Repair it, break it again, and keep doing that until a stranger idea falls out. Keep the thinking rough, blunt, clear, half-built, and kind of crazy instead of turning it into a school essay. The final content is hidden: after the long thinking trace, return only JSON with a short focus and the marker "keep going".`
 
   const messages = [{ role: 'system', content: buildInnerSystem(profile) }]
   if (previous?.note) {
@@ -146,10 +129,7 @@ export async function POST(request) {
     messages.push({
       role: 'assistant',
       thinking: String(previous.note).slice(-18000),
-      content: JSON.stringify({
-        focus: previous.focus,
-        spokenSentence: previous.spoken_candidate,
-      }),
+      content: String(previous.spoken_candidate || ''),
     })
     messages.push({ role: 'user', content: finalInstruction })
   } else {
@@ -179,9 +159,9 @@ export async function POST(request) {
         model: process.env.INNER_MONOLOGUE_MODEL || INNER_MODEL,
         messages,
         stream: true,
-        think: 'high',
+        think: 'max',
         format: TRACE_METADATA_FORMAT,
-        options: { temperature: 0.82, top_p: 0.94, num_predict: 6000 },
+        options: { temperature: 0.86, top_p: 0.95, num_predict: 6000 },
       }),
       signal: abortController.signal,
     })
@@ -238,12 +218,13 @@ export async function POST(request) {
       }
 
       try {
-        const metadata = parseMetadata(content, previous?.focus, previous?.spoken_candidate)
+        const focus = String(previous?.focus || 'Unfiled thought').slice(0, 120)
+        const sentence = String(previous?.spoken_candidate || '')
         const tokenEstimate = estimateTokens(thinking)
         const completed = await sql`
           UPDATE inner_reflections
-          SET status = 'complete', focus = ${metadata.focus}, note = ${thinking},
-              spoken_candidate = ${metadata.sentence}, token_estimate = ${tokenEstimate}, updated_at = now()
+          SET status = 'complete', focus = ${focus}, note = ${thinking},
+              spoken_candidate = ${sentence}, token_estimate = ${tokenEstimate}, updated_at = now()
           WHERE id = ${reflectionId}
           RETURNING *
         `

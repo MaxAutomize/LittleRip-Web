@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser, sameOrigin } from '../../../../lib/auth'
 import { db, ensureSchema } from '../../../../lib/db'
 import { CYCLE_DURATION_MS } from '../../../../lib/inner-config'
-import { normalizeSpokenSentence } from '../../../../lib/inner-model'
+import { createSpokenShare, normalizeSpokenSentence } from '../../../../lib/inner-model'
+
+export const maxDuration = 180
 
 export async function POST(request) {
   if (!sameOrigin(request)) {
@@ -86,23 +88,42 @@ export async function POST(request) {
       return NextResponse.json({ error: 'The five-minute cycle is still in progress.' }, { status: 409 })
     }
 
-    const reflections = await sql`
-      SELECT step_number, spoken_candidate
-      FROM inner_reflections
-      WHERE cycle_id = ${cycle.id} AND user_id = ${user.id} AND status = 'complete'
-      ORDER BY step_number DESC
-    `
+    const [reflections, profiles] = await Promise.all([
+      sql`
+        SELECT step_number, focus, note, spoken_candidate
+        FROM inner_reflections
+        WHERE cycle_id = ${cycle.id} AND user_id = ${user.id} AND status = 'complete'
+        ORDER BY step_number ASC
+      `,
+      sql`SELECT * FROM inner_profiles WHERE user_id = ${user.id} LIMIT 1`,
+    ])
     if (reflections.length < 1) {
       return NextResponse.json({ error: 'Let the thinking trace begin before sharing.' }, { status: 409 })
     }
 
-    const sentence = normalizeSpokenSentence(reflections[0]?.spoken_candidate)
-    const updated = await sql`
-      UPDATE inner_cycles
-      SET status = 'complete', spoken_sentence = ${sentence}, completed_at = now()
-      WHERE id = ${cycle.id}
-      RETURNING *
-    `
+    let focus = reflections[reflections.length - 1]?.focus || 'Unfiled thought'
+    let sentence = normalizeSpokenSentence(reflections[reflections.length - 1]?.spoken_candidate)
+    try {
+      const share = await createSpokenShare({ profile: profiles[0], traces: reflections })
+      focus = share.focus
+      sentence = share.sentence
+    } catch (error) {
+      console.error('Could not create the five-minute spoken sentence:', error?.message || 'Error')
+    }
+
+    const [updated] = await Promise.all([
+      sql`
+        UPDATE inner_cycles
+        SET status = 'complete', spoken_sentence = ${sentence}, completed_at = now()
+        WHERE id = ${cycle.id}
+        RETURNING *
+      `,
+      sql`
+        UPDATE inner_reflections
+        SET focus = ${focus}, spoken_candidate = ${sentence}, updated_at = now()
+        WHERE cycle_id = ${cycle.id} AND user_id = ${user.id} AND status = 'complete'
+      `,
+    ])
     return NextResponse.json({ cycle: updated[0], sentence })
   }
 

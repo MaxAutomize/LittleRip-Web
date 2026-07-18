@@ -1599,6 +1599,55 @@ body {
 
 .magic-whisper input::placeholder { color: rgba(238, 232, 220, 0.34); }
 
+.magic-spoken {
+  position: fixed;
+  z-index: 54;
+  left: 50%;
+  bottom: 66px;
+  transform: translateX(-50%);
+  width: min(720px, calc(100% - 48px));
+  margin: 0;
+  padding: 18px 38px;
+  color: rgba(238, 232, 220, 0.6);
+  background: radial-gradient(ellipse at center, rgba(5, 5, 5, 0.96) 0 52%, rgba(5, 5, 5, 0) 78%);
+  text-shadow: 0 0 18px #050505, 0 0 34px #050505;
+  font-family: var(--serif);
+  font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+  line-height: 1.5;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.magic-loop-switch {
+  position: fixed;
+  z-index: 56;
+  left: 50%;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  padding: 8px 18px;
+  border: 0;
+  color: rgba(238, 232, 220, 0.34);
+  background: transparent;
+  font-family: var(--body);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition: color 0.5s, text-shadow 0.5s;
+}
+
+.magic-loop-switch:hover {
+  color: rgba(238, 232, 220, 0.9);
+  text-shadow: 0 0 20px rgba(201, 168, 76, 0.3);
+}
+
+.magic-cabinet-label {
+  margin-bottom: 44px;
+  color: rgba(238, 232, 220, 0.24);
+  font-family: var(--body);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+}
+
 .magic-error {
   position: fixed;
   z-index: 70;

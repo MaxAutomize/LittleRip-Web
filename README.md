@@ -12,7 +12,7 @@ This is the web side of the LittleRip ecosystem, alongside:
 - `/` — landing page with the arc-rainbow LittleRip title.
 - `/chat` — streaming Char chat UI using Ollama Cloud's `/v1/chat/completions` backend. Char is a serious fictional roleplay persona with South Park canon cross-referencing.
 - `/call` — browser voice call using Web Speech API speech-to-text and speech synthesis.
-- `/inner-monologue` — account-based, five-minute GLM-5.2 reflection loop with browser speech, editable inquiry prompt, and categorized persistent memory.
+- `/inner-monologue` — account-based, five-minute GLM-5.2 thinking loop with browser speech, a hidden server-owned prompt, and categorized persistent memory.
 - `/payment` — Stripe one-time custom-amount checkout.
 
 ## Stack

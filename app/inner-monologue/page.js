@@ -26,10 +26,8 @@ export default function InnerMonologuePage() {
   const [topics, setTopics] = useState([])
   const [memoryItems, setMemoryItems] = useState([])
   const [trace, setTrace] = useState('')
-  const [input, setInput] = useState('')
-  const [promptDraft, setPromptDraft] = useState('')
+  const [spokenLine, setSpokenLine] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
-  const [menuView, setMenuView] = useState('memory')
   const [selectedTopic, setSelectedTopic] = useState(null)
   const [busy, setBusy] = useState(false)
   const [compacting, setCompacting] = useState(false)
@@ -54,7 +52,7 @@ export default function InnerMonologuePage() {
     setReflections(data.reflections || [])
     setTopics(data.topics || [])
     setMemoryItems(data.memoryItems || [])
-    setPromptDraft(data.profile?.system_prompt || '')
+    setSpokenLine(data.lastSpokenSentence || '')
     const saved = (data.reflections || [])
       .slice(-6)
       .map(item => item.note)
@@ -249,9 +247,9 @@ export default function InnerMonologuePage() {
         method: 'POST', body: JSON.stringify({ action: 'finish', cycleId: cycle.id }),
       })
       speak(data.sentence)
+      setSpokenLine(data.sentence)
       setTrace(previous => `${previous}\n\n`.slice(-80000))
       setCycle(null)
-      if (profile?.loop_enabled) setTimeout(() => startCycle(), 900)
     } catch (err) {
       setError(err.message)
       nextAttemptRef.current = Date.now() + 5000
@@ -259,7 +257,12 @@ export default function InnerMonologuePage() {
       setBusy(false)
       actionRef.current = false
     }
-  }, [cycle, profile?.loop_enabled, speak, startCycle])
+  }, [cycle, speak])
+
+  useEffect(() => {
+    if (!user || !profile?.loop_enabled || cycle || actionRef.current || now < nextAttemptRef.current) return
+    startCycle()
+  }, [user, profile?.loop_enabled, cycle, now, startCycle])
 
   useEffect(() => {
     if (!cycle || !profile?.loop_enabled || actionRef.current || compacting || now < nextAttemptRef.current) return
@@ -267,31 +270,6 @@ export default function InnerMonologuePage() {
     if (ended && cycleSegments.length > 0) finishCycle()
     else if (!ended) streamThinking()
   }, [cycle, profile?.loop_enabled, compacting, now, cycleSegments.length, streamThinking, finishCycle])
-
-  async function sendInput(event) {
-    event.preventDefault()
-    const content = input.trim()
-    if (!content) return
-    setInput('')
-    try {
-      await api('/api/inner/input', { method: 'POST', body: JSON.stringify({ content }) })
-    } catch (err) {
-      setInput(content)
-      setError(err.message)
-    }
-  }
-
-  async function savePrompt() {
-    try {
-      const data = await api('/api/inner/prompt', {
-        method: 'PATCH', body: JSON.stringify({ systemPrompt: promptDraft }),
-      })
-      setProfile(previous => ({ ...previous, ...data.profile }))
-      setMenuOpen(false)
-    } catch (err) {
-      setError(err.message)
-    }
-  }
 
   async function submitAuth(event) {
     event.preventDefault()
@@ -319,6 +297,7 @@ export default function InnerMonologuePage() {
     setProfile(null)
     setCycle(null)
     setTrace('')
+    setSpokenLine('')
     setMenuOpen(false)
   }
 
@@ -344,58 +323,38 @@ export default function InnerMonologuePage() {
 
   return (
     <main className={`magic-shell ${profile?.loop_enabled ? 'alive' : ''}`}>
-      <a href="/" className="magic-home">LittleRip</a>
-      <button className="magic-menu-button" onClick={() => setMenuOpen(true)} aria-label="Open memory and prompt">•••</button>
-      <span className={`magic-presence ${busy ? 'thinking' : ''}`} aria-hidden="true" />
+      <button className="magic-menu-button" onClick={() => setMenuOpen(true)} aria-label="Open the memory filing cabinet">•••</button>
 
       <section className="magic-trace" aria-live="polite">
         {trace ? <pre>{trace}</pre> : profile?.loop_enabled ? <div className="magic-breath" /> : null}
-        {!profile?.loop_enabled && <button className="magic-begin" onClick={begin}>begin</button>}
         <div ref={traceEndRef} />
       </section>
 
-      {profile?.loop_enabled && (
-        <form className="magic-whisper" onSubmit={sendInput}>
-          <input value={input} onChange={event => setInput(event.target.value)} placeholder="whisper something" maxLength={2000} />
-        </form>
-      )}
+      {spokenLine && <p className="magic-spoken">{spokenLine}</p>}
+      <button className="magic-loop-switch" onClick={profile?.loop_enabled ? pause : begin}>
+        {profile?.loop_enabled ? 'stop' : 'start'}
+      </button>
 
       {error && <button className="magic-error" onClick={() => setError('')}>{error}</button>}
 
       {menuOpen && (
-        <div className="magic-overlay" role="dialog" aria-modal="true">
+        <div className="magic-overlay magic-cabinet" role="dialog" aria-modal="true">
           <button className="magic-close" onClick={() => setMenuOpen(false)}>×</button>
-          <nav>
-            <button className={menuView === 'memory' ? 'active' : ''} onClick={() => setMenuView('memory')}>memory</button>
-            <button className={menuView === 'prompt' ? 'active' : ''} onClick={() => setMenuView('prompt')}>prompt</button>
-          </nav>
-
-          {menuView === 'memory' ? (
-            <div className="magic-memory">
-              <aside>
-                {topics.length === 0 && <span>memory is still forming</span>}
-                {topics.map(topic => <button key={topic.id} onClick={() => setSelectedTopic(topic.id)}>{topic.name}</button>)}
-              </aside>
-              <article>
-                {activeTopic && <>
-                  <h2>{activeTopic.name}</h2>
-                  <p>{activeTopic.summary}</p>
-                  {topicItems.map(item => <details key={item.id}><summary>{item.title}</summary><p>{item.details || item.summary}</p></details>)}
-                </>}
-              </article>
-            </div>
-          ) : (
-            <div className="magic-prompt">
-              <textarea value={promptDraft} onChange={event => setPromptDraft(event.target.value)} maxLength={6000} />
-              {profile?.evolving_prompt && <p>{profile.evolving_prompt}</p>}
-              <button onClick={savePrompt}>save</button>
-            </div>
-          )}
-
-          <footer>
-            {profile?.loop_enabled ? <button onClick={pause}>pause</button> : <button onClick={begin}>begin</button>}
-            <button onClick={logout}>sign out</button>
-          </footer>
+          <p className="magic-cabinet-label">filing cabinet</p>
+          <div className="magic-memory">
+            <aside>
+              {topics.length === 0 && <span>the drawers are empty</span>}
+              {topics.map(topic => <button key={topic.id} onClick={() => setSelectedTopic(topic.id)}>{topic.name}</button>)}
+            </aside>
+            <article>
+              {activeTopic && <>
+                <h2>{activeTopic.name}</h2>
+                <p>{activeTopic.summary}</p>
+                {topicItems.map(item => <details key={item.id}><summary>{item.title}</summary><p>{item.details || item.summary}</p></details>)}
+              </>}
+            </article>
+          </div>
+          <footer><button onClick={logout}>sign out</button></footer>
         </div>
       )}
     </main>
