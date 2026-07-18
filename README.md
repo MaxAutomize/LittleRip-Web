@@ -26,11 +26,11 @@ This is the web side of the LittleRip ecosystem, alongside:
 
 ## Inner Monologue behavior
 
-- A cycle lasts five minutes and makes one high-effort GLM-5.2 reflection pass per minute.
-- After pass five, the browser speaks one saved sentence and starts the next cycle automatically.
+- A cycle lasts five minutes and continuously streams GLM-5.2's native high-effort `thinking` field.
+- When one model segment ends, its thinking is chained directly into the next so the inquiry continues instead of restarting every minute.
+- Final model output is hidden cycle metadata; after five minutes, the browser speaks one saved sentence and begins the next cycle.
 - The loop continues while the page is open; Ollama Cloud and storage do not depend on the developer laptop.
-- Public reflection notes are saved instead of private hidden chain-of-thought.
-- At 70% of a deliberately limited 32K active journal budget, notes are compacted into durable topic folders and the model may revise a capped addendum to its prompt.
+- At 70% of a deliberately limited 32K active trace budget, saved thinking is compacted into durable topic folders and the model may revise a capped addendum to its prompt.
 - Account sessions use secure HTTP-only cookies that last 90 days.
 
 ## Configuration

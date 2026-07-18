@@ -32,7 +32,7 @@ export async function GET() {
         FROM inner_reflections
         WHERE user_id = ${user.id} AND status = 'complete'
         ORDER BY created_at DESC
-        LIMIT 100
+        LIMIT 30
       `,
       sql`
         SELECT id, slug, name, summary, created_at, updated_at

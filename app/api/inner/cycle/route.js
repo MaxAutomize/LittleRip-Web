@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { getCurrentUser, sameOrigin } from '../../../../lib/auth'
 import { db, ensureSchema } from '../../../../lib/db'
-import { CYCLE_DURATION_MS, STEPS_PER_CYCLE } from '../../../../lib/inner-config'
+import { CYCLE_DURATION_MS } from '../../../../lib/inner-config'
 import { normalizeSpokenSentence } from '../../../../lib/inner-model'
 
 export async function POST(request) {
@@ -92,11 +92,8 @@ export async function POST(request) {
       WHERE cycle_id = ${cycle.id} AND user_id = ${user.id} AND status = 'complete'
       ORDER BY step_number DESC
     `
-    if (reflections.length < STEPS_PER_CYCLE) {
-      return NextResponse.json({
-        error: 'Complete the remaining reflection passes before sharing.',
-        completedSteps: reflections.length,
-      }, { status: 409 })
+    if (reflections.length < 1) {
+      return NextResponse.json({ error: 'Let the thinking trace begin before sharing.' }, { status: 409 })
     }
 
     const sentence = normalizeSpokenSentence(reflections[0]?.spoken_candidate)
