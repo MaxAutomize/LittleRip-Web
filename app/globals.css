@@ -222,6 +222,14 @@ body {
   filter: drop-shadow(0 12px 30px rgba(167, 118, 38, 0.14));
 }
 
+.no-tabs {
+  justify-content: center;
+}
+
+.home-title {
+  margin-bottom: 18px;
+}
+
 .menu-sub {
   color: var(--muted);
   font-family: var(--body);

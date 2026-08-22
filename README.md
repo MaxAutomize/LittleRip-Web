@@ -9,10 +9,10 @@ This is the web side of the LittleRip ecosystem, alongside:
 
 ## Routes
 
-- `/` — landing page with the arc-rainbow LittleRip title.
-- `/chat` — streaming Char chat UI using Ollama Cloud's `/v1/chat/completions` backend. Char is a serious fictional roleplay persona with South Park canon cross-referencing.
-- `/call` — browser voice call using Web Speech API speech-to-text and speech synthesis.
-- `/payment` — Stripe one-time custom-amount checkout.
+- `/` — minimal landing page with no public feature tabs.
+- `/chat` — retained direct AI chat UI using Ollama Cloud's `/v1/chat/completions` backend.
+- `/call` — retained direct browser voice call using Web Speech API speech-to-text and speech synthesis.
+- `/payment` — retained direct Stripe one-time custom-amount checkout.
 
 ## Stack
 
