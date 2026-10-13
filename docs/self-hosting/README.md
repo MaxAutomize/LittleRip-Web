@@ -50,7 +50,7 @@ On the Mac, the primary recovery file is `~/littlerip-metal/docs/ON_DEMAND_RECOV
 
 ## Local artifacts and source provenance
 
-The editable workspace has its own local Git history, most recently `e9bd813` at this handoff. That local commit is **not** an application-source commit in this GitHub repository.
+The editable workspace has its own local Git history. The application implementation milestone for this handoff is `e9bd813`; later documentation-only commits may exist. That local commit is **not** an application-source commit in this GitHub repository.
 
 - Source workspace: `~/littlerip-metal`
 - Lean runtime directory: `~/littlerip-metal/artifacts/runtime`

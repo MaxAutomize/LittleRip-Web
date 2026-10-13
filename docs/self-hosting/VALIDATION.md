@@ -60,9 +60,9 @@ Configured guards: 120 new checkouts/IP/minute; 600 globally/minute; 300 total c
 ## Lean runtime
 
 `artifacts/runtime/` contains executable application code, compiled assets, Stripe SDK, and Nodemailer:
-- Total **7,052,188 bytes**.
+- Total **7,057,240 bytes**.
 - Runtime dependencies **4,037,739 bytes**.
-- All image variants/compiled assets **2,957,054 bytes**.
+- All image variants/compiled assets **2,958,800 bytes**.
 - Removed **13,995,444 bytes** of non-executable type declarations/source maps.
 - No development dependencies, source artwork, credentials, customer orders, Node binary, or Python installation included.
 - Runtime startup/render/shutdown passed.
