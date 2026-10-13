@@ -7,6 +7,12 @@ This is the web side of the LittleRip ecosystem, alongside:
 - **LittleRip iOS** — mobile AI assistant + SmartRent unlock widget.
 - **LittleRip Mac** — robot camera/sensor control center.
 
+## Self-hosting and recovery handoff
+
+The separate **LittleRip Metal** workspace, its setup, production-readiness blockers, performance results, and the owner's on-demand recovery preference are documented in **[docs/self-hosting/README.md](docs/self-hosting/README.md)**.
+
+Those commands apply to `~/littlerip-metal`, not this Next.js repository root. The documentation does not mean a public-domain migration has occurred or that the self-hosted application source is included here.
+
 ## Routes
 
 - `/` — minimal landing page with no public feature tabs.
